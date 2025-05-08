@@ -19,6 +19,9 @@ class PackageController extends Controller
     public function showAllPackages(){
         return $this->packageRepository->showAllPackages();
     }
+    public function showAllAgency(){
+        return $this->packageRepository->showAllAgency();
+    }
     public function showAllPackagesAgency($id){
         return $this->packageRepository->showAllPackagesAgency($id);
     }

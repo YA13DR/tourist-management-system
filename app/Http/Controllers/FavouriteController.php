@@ -30,4 +30,7 @@ class FavouriteController extends Controller
     public function addPackageToFavourite($id){
         return $this->favouriteRepository->addPackageToFavourite($id);
     }
+    public function removeFromFavouriteById($id){
+        return $this->favouriteRepository->removeFromFavouriteById($id);
+    }
 }

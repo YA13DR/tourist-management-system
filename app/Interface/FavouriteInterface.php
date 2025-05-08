@@ -10,4 +10,6 @@ interface FavouriteInterface
     public function addHotelToFavourite($id);
     public function addTourToFavourite($id);
     public function addPackageToFavourite($id);
+    public function removeFromFavouriteById($id);
+    
 }

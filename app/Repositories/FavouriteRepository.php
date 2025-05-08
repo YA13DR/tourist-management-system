@@ -149,4 +149,21 @@ class FavouriteRepository implements FavouriteInterface
         return $this->success('package added to favourites.', ['favourite' => $favourite]);
     }
 
+    public function removeFromFavouriteById($id)
+    {
+        $user = auth()->user();
+
+        $favourite = Favourite::where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$favourite) {
+            return $this->error('Favourite not found or does not belong to the user.', 404);
+        }
+
+        $favourite->delete();
+
+        return $this->success('Removed from favourites.');
+    }
+
 }

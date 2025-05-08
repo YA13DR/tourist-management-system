@@ -23,6 +23,7 @@ Route::post('/auth/signup',[AuthController::class,'signup']);
 Route::middleware('auth:sanctum')->group(function () {
   Route::get('package/show/{id}',[PackageController::class,'showpackage']);
   Route::get('package/showAll',[PackageController::class,'showAllpackages']);
+  Route::get('package/showAllAgency',[PackageController::class,'showAllAgency']);
   Route::get('package/showAll/{id}',[PackageController::class,'showAllpackagesAgency']);
   Route::post('package/bookPackage/{id}',[PackageController::class,'bookTravelPackage']);
 });
@@ -35,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('/favourite/hotel/{id}', [FavouriteController::class, 'addHotelToFavourite']);
   Route::post('/favourite/tour/{id}', [FavouriteController::class, 'addTourToFavourite']);
   Route::post('/favourite/package/{id}', [FavouriteController::class, 'addPackageToFavourite']);
+  Route::post('/favourite/delete/{id}', [FavouriteController::class, 'removeFromFavouriteById']);
 });
 
 // // Tour Management Routes
@@ -70,11 +72,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // // Taxi Service Management Routes
 // Route::prefix('taxi-services')->group(function () {
-//     // Routes will be implemented here
-// });
-
-// // Travel Agency Management Routes
-// Route::prefix('travel-agencies')->group(function () {
 //     // Routes will be implemented here
 // });
 

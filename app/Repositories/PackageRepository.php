@@ -7,6 +7,7 @@ use App\Http\Requests\TravelBookingRequest;
 use App\Interface\PackageInterface;
 use App\Models\Booking;
 use App\Models\PackageBooking;
+use App\Models\TravelAgency;
 use App\Models\TravelBooking;
 use App\Models\TravelPackage;
 use App\Models\Favourite;
@@ -46,6 +47,13 @@ class PackageRepository implements PackageInterface
 
         return $this->success('All packages retrieved successfully', [
             'packages' => $result,
+        ]);
+    }
+    public function showAllAgency(){
+        $agencies = TravelAgency::with('packages')->where('isActive', true)->get();
+
+        return $this->success('All travel agencies retrieved successfully', [
+            'agencies' => $agencies,
         ]);
     }
     public function showAllPackagesAgency($id)
