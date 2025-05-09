@@ -60,9 +60,9 @@ class RestaurantSubAdminPanelProvider extends PanelProvider
             ->resources([
                 \App\Filament\RestaurantSubAdmin\Resources\MenuCategoryResource::class,
                 \App\Filament\RestaurantSubAdmin\Resources\MenuItemResource::class,
-                \App\Filament\Resources\RestaurantBookingResource::class,
-                \App\Filament\Resources\RestaurantImageResource::class,
-                \App\Filament\Resources\RestaurantTableResource::class,
+                \App\Filament\RestaurantAdmin\Resources\RestaurantBookingResource::class,
+                \App\Filament\RestaurantSubAdmin\Resources\RestaurantImageResource::class,
+                \App\Filament\RestaurantSubAdmin\Resources\RestaurantTableResource::class,
                 \App\Filament\Resources\AdminResource::class,
             ])
             ->middleware([

@@ -50,10 +50,9 @@ class HotelSubAdminPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->resources([
-                \App\Filament\Resources\RoomTypeResource::class,
-                \App\Filament\Resources\HotelImageResource::class,
-                \App\Filament\Resources\HotelAmenityResource::class,
-                \App\Filament\Resources\HotelBookingResource::class,
+                \App\Filament\HotelSubAdmin\Resources\RoomTypeResource::class,
+                \App\Filament\HotelSubAdmin\Resources\HotelImageResource::class,
+                \App\Filament\HotelAdmin\Resources\HotelBookingResource::class,
                 \App\Filament\HotelSubAdmin\Resources\HotelAmenityMapResource::class,
                 \App\Filament\Resources\AdminResource::class,
             ])

@@ -47,10 +47,11 @@ class TravelSubAdminPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->resources([
-                \App\Filament\TravelAdmin\Resources\TravelPackageResource::class,
-                \App\Filament\TravelAdmin\Resources\PackageBookingResource::class,
-                \App\Filament\TravelAdmin\Resources\PackageDestinationResource::class,
-                \App\Filament\TravelAdmin\Resources\PackageInclusionResource::class,
+                \App\Filament\TravelSubAdmin\Resources\TravelFlightResource::class,
+                \App\Filament\TravelSubAdmin\Resources\TravelPackageResource::class,
+                \App\Filament\TravelSubAdmin\Resources\PackageDestinationResource::class,
+                \App\Filament\TravelSubAdmin\Resources\PackageInclusionResource::class,
+                \App\Filament\TravelAdmin\Resources\TravelBookingResource::class,
                 \App\Filament\Resources\AdminResource::class,
             ])
             ->discoverWidgets(in: app_path('Filament/TravelSubAdmin/Widgets'), for: 'App\\Filament\\TravelSubAdmin\\Widgets')

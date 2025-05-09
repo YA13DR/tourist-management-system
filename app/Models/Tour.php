@@ -72,6 +72,10 @@ class Tour extends Model
     {
         return $this->belongsTo(Location::class, 'location_id', 'id');
     }
+    public function package(): BelongsTo
+    {
+        return $this->belongsTo(TravelPackage::class, 'tour_id', 'id');
+    }
 
     /**
      * Get the user that created the tour.

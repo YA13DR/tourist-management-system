@@ -31,9 +31,7 @@ class PackageBooking extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'booking_id',
-        'user_id',
-        'agency_id',
+        'tour_id',
         'package_id',
         'booking_date',
         'numberOfAdults',
@@ -57,6 +55,10 @@ class PackageBooking extends Model
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'booking_id', 'id');
+    }
+    public function tour(): BelongsTo
+    {
+        return $this->belongsTo(Tour::class, 'tour_id', 'id');
     }
 
     /**

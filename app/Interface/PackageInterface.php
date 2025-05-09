@@ -2,14 +2,12 @@
 
 namespace App\Interface;
 
-use App\Http\Requests\TravelBookingRequest;
+use App\Http\Requests\PackageBookingRequest;
 
 interface PackageInterface
 {
     public function showAllPackages();
-    public function showAllPackagesAgency($id);
     public function showPackage($id);
-    public function showAllAgency();
-    public function bookTravelPackage($id, TravelBookingRequest $request);
+    public function bookTravelPackage($id, PackageBookingRequest $request);
     
 }

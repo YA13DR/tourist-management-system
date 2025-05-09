@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Http\Requests\PackageBookingRequest;
 use App\Http\Requests\TourBookingRequest;
 use App\Http\Requests\TravelBookingRequest;
 use App\Interface\PackageInterface;
@@ -49,44 +50,6 @@ class PackageRepository implements PackageInterface
             'packages' => $result,
         ]);
     }
-    public function showAllAgency(){
-        $agencies = TravelAgency::with('packages')->where('isActive', true)->get();
-
-        return $this->success('All travel agencies retrieved successfully', [
-            'agencies' => $agencies,
-        ]);
-    }
-    public function showAllPackagesAgency($id)
-    {
-        $packages = TravelPackage::with([
-            'destinations.location',
-            'inclusions',
-            'agency'
-        ])->where('agency_id',$id)->where('isActive', true)->get();
-
-        $user = auth()->user();
-
-        $result = $packages->map(function ($package) use ($user) {
-            $isFavourited = false;
-            if ($user) {
-                $isFavourited = Favourite::where([
-                    'user_id' => $user->id,
-                    'favoritable_id' => $package->id,
-                    'favoritable_type' => TravelPackage::class,
-                ])->exists();
-            }
-
-            return [
-                'package' => $package,
-                'is_favourited' => $isFavourited,
-            ];
-        });
-
-        return $this->success('All packages retrieved successfully', [
-            'packages' => $result,
-        ]);
-    }
-
     public function showPackage($id)
     {
         $package = TravelPackage::with([
@@ -114,7 +77,7 @@ class PackageRepository implements PackageInterface
             'is_favourited' => $isFavourited,
         ]);
     }
-    public function bookTravelPackage($id, TravelBookingRequest $request)
+    public function bookTravelPackage($id, PackageBookingRequest $request)
     {
         $package = TravelPackage::find($id);
 

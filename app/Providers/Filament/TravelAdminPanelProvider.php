@@ -46,7 +46,7 @@ class TravelAdminPanelProvider extends PanelProvider
             ])
             ->resources([
                 \App\Filament\TravelAdmin\Resources\TravelAgencyResource::class,
-                \App\Filament\TravelAdmin\Resources\PackageBookingResource::class,
+                \App\Filament\TravelAdmin\Resources\TravelBookingResource::class,
                 \App\Filament\Resources\AdminResource::class,
             ])
             ->discoverWidgets(in: app_path('Filament/TravelAdmin/Widgets'), for: 'App\\Filament\\TravelAdmin\\Widgets')

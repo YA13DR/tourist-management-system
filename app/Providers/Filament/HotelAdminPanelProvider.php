@@ -42,10 +42,9 @@ class HotelAdminPanelProvider extends PanelProvider
             ->font('Roboto Mono')
             ->brandName('PILOT')
             ->resources([
-                \App\Filament\Resources\HotelAmenityResource::class,
-                \App\Filament\Resources\HotelBookingResource::class,
-                \App\Filament\Resources\HotelImageResource::class,
-                \App\Filament\Resources\HotelResource::class,
+                \App\Filament\HotelAdmin\Resources\HotelAmenityResource::class,
+                \App\Filament\HotelAdmin\Resources\HotelBookingResource::class,
+                \App\Filament\HotelAdmin\Resources\HotelResource::class,
                 \App\Filament\Resources\AdminResource::class,
             ])
             ->discoverResources(in: app_path('Filament/HotelAdmin/Resources'), for: 'App\\Filament\\HotelAdmin\\Resources')

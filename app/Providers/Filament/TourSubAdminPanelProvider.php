@@ -53,9 +53,10 @@ class TourSubAdminPanelProvider extends PanelProvider
             ])
             ->resources([
                 \App\Filament\TourAdmin\Resources\TourBookingResource::class,
-                \App\Filament\TourAdmin\Resources\TourImageResource::class,
-                \App\Filament\TourAdmin\Resources\TourScheduleResource::class,
-                \App\Filament\TourAdmin\Resources\TourTranslationResource::class,
+                \App\Filament\TourSubAdmin\Resources\TourImageResource::class,
+                \App\Filament\TourSubAdmin\Resources\TourScheduleResource::class,
+                \App\Filament\TourSubAdmin\Resources\TourTranslationResource::class,
+                \App\Filament\TourSubAdmin\Resources\PackageBookingResource::class,
                 \App\Filament\TourAdmin\Resources\TourCategoryResource::class,
                 \App\Filament\Resources\AdminResource::class,
             ])

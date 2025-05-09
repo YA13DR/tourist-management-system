@@ -90,10 +90,8 @@ return new class extends Migration
         // Package Bookings table
         Schema::create('PackageBookings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_id')->constrained('Bookings', 'id');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('tour_id')->constrained('Tours')->onDelete('cascade');
             $table->foreignId('package_id')->constrained('TravelPackages', 'id');
-            $table->foreignId('agency_id')->nullable()->constrained('TravelAgencies')->onDelete('set null');
             $table->integer('numberOfAdults')->notNull()->default(1);
             $table->integer('numberOfChildren')->notNull()->default(0);
             $table->decimal('cost', 10, 2);

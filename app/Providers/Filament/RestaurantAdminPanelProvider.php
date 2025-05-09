@@ -49,10 +49,8 @@ class RestaurantAdminPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->resources([
-                \App\Filament\Resources\RestaurantResource::class,
-                \App\Filament\Resources\RestaurantBookingResource::class,
-                \App\Filament\Resources\RestaurantImageResource::class,
-                \App\Filament\Resources\RestaurantTableResource::class,
+                \App\Filament\RestaurantAdmin\Resources\RestaurantResource::class,
+                \App\Filament\RestaurantAdmin\Resources\RestaurantBookingResource::class,
                 \App\Filament\Resources\AdminResource::class,
             ])
             ->discoverWidgets(in: app_path('Filament/RestaurantAdmin/Widgets'), for: 'App\\Filament\\RestaurantAdmin\\Widgets')

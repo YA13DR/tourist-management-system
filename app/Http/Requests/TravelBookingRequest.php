@@ -22,8 +22,7 @@ class TravelBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'numberOfAdults' => 'required',
-            'numberOfChildren' => 'required',
+            'number_of_people' => 'required|integer|min:1',
         ];
     }
 }

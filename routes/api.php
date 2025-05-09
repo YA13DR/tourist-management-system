@@ -21,6 +21,16 @@ Route::post('/auth/signup',[AuthController::class,'signup']);
 
 // // Package Management Routes
 Route::middleware('auth:sanctum')->group(function () {
+  Route::get('travel/showAll',[TravelController::class,'getAllFlights']);
+  Route::get('travel/show/{id}',[TravelController::class,'getFlight']);
+  Route::get('travel/showAviable',[TravelController::class,'getAvailableFlights']);
+  Route::get('travel/showAviableDate',[TravelController::class,'getAvailableFlightsDate']);
+  Route::get('travel/showAgency/{id}',[TravelController::class,'getAgency']);
+  Route::get('travel/showAllAgency',[TravelController::class,'getAllAgency']);
+  Route::post('travel/bookFlight/{id}',[TravelController::class,'bookFlight']);
+});
+// // Package Management Routes
+Route::middleware('auth:sanctum')->group(function () {
   Route::get('package/show/{id}',[PackageController::class,'showpackage']);
   Route::get('package/showAll',[PackageController::class,'showAllpackages']);
   Route::get('package/showAllAgency',[PackageController::class,'showAllAgency']);

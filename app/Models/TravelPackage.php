@@ -32,6 +32,7 @@ class TravelPackage extends Model
      */
     protected $fillable = [
         'agency_id',
+        'tour_id',
         'name',
         'description',
         'durationDays',
@@ -67,6 +68,10 @@ class TravelPackage extends Model
     public function agency(): BelongsTo
     {
         return $this->belongsTo(TravelAgency::class, 'agency_id', 'id');
+    }
+    public function tour(): BelongsTo
+    {
+        return $this->belongsTo(Tour::class, 'tour_id', 'id');
     }
 
     /**

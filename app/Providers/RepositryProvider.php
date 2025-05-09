@@ -49,6 +49,10 @@ class RepositryProvider extends ServiceProvider
             PackageInterface::class,
             PackageRepository::class,
         );
+        $this->app->bind(
+            TravelInterface::class,
+            TravelRepository::class,
+        );
     }
 
     /**

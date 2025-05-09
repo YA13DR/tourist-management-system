@@ -45,9 +45,6 @@ class TourAdminPanelProvider extends PanelProvider
             ->resources([
                 \App\Filament\TourAdmin\Resources\TourResource::class,
                 \App\Filament\TourAdmin\Resources\TourBookingResource::class,
-                \App\Filament\TourAdmin\Resources\TourImageResource::class,
-                \App\Filament\TourAdmin\Resources\TourScheduleResource::class,
-                \App\Filament\TourAdmin\Resources\TourTranslationResource::class,
                 \App\Filament\TourAdmin\Resources\TourCategoryResource::class,
                 \App\Filament\Resources\AdminResource::class,
             ])

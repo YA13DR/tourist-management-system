@@ -73,4 +73,8 @@ class TravelAgency extends Model
     {
         return $this->hasMany(TravelPackage::class, 'agency_id', 'id');
     }
+    public function flights(): HasMany
+    {
+        return $this->hasMany(TravelFlight::class, 'agency_id', 'id');
+    }
 }
