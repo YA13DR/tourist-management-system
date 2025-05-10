@@ -34,6 +34,7 @@ class Hotel extends Model
     protected $fillable = [
         'name',
         'description',
+        'discount',
         'starRating',
         'checkInTime',
         'checkOutTime',

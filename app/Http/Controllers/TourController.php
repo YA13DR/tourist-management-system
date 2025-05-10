@@ -25,4 +25,8 @@ class TourController extends Controller
     {
         return $this->tourRepository->bookTour($id,$request);
     }
+    public function bookTourByPoint($id,TourBookingRequest $request)
+    {
+        return $this->tourRepository->bookTourByPoint($id,$request);
+    }
 }

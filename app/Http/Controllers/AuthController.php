@@ -15,6 +15,14 @@ class AuthController extends Controller
     {
         $this->authRepository = $authRepository;
     }
+    public function UserRank()
+    {
+        return $this->authRepository->UserRank();
+    }
+    public function discountPoints()
+    {
+        return $this->authRepository->discountPoints();
+    }
     public function login(LoginRequest $request)
     {
         return $this->authRepository->login($request);

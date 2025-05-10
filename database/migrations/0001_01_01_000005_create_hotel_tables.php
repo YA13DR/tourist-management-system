@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->notNull();
             $table->text('description')->nullable();
+            $table->double('discount')->nullable();
             $table->integer('starRating')->nullable();
             $table->time('checkInTime')->nullable();
             $table->time('checkOutTime')->nullable();

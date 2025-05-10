@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Route;
 //login
 Route::post('/auth/login',[AuthController::class,'login']);
 Route::post('/auth/signup',[AuthController::class,'signup']);
+Route::get('/auth/userRank',[AuthController::class,'userRank']);
+Route::get('/auth/discountPoints',[AuthController::class,'discountPoints']);
 
 // // Location Management Routes
 // Route::prefix('locations')->group(function () {
@@ -28,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('travel/showAgency/{id}',[TravelController::class,'getAgency']);
   Route::get('travel/showAllAgency',[TravelController::class,'getAllAgency']);
   Route::post('travel/bookFlight/{id}',[TravelController::class,'bookFlight']);
+  Route::post('travel/bookFlightByPoint/{id}',[TravelController::class,'bookFlightByPoint']);
 });
 // // Package Management Routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -54,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('tour/show/{id}',[TourController::class,'showTour']);
   Route::get('tour/showAll',[TourController::class,'showAllTour']);
   Route::post('tour/bookTour/{id}',[TourController::class,'bookTour']);
+  Route::post('tour/bookTourByPoint/{id}',[TourController::class,'bookTour']);
 });
 
 // // Hotel Management Routes

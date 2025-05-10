@@ -32,7 +32,6 @@ class TravelPackage extends Model
      */
     protected $fillable = [
         'agency_id',
-        'tour_id',
         'name',
         'description',
         'durationDays',

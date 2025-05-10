@@ -7,7 +7,8 @@ use App\Http\Requests\OTPRequest;
 
 interface AuthInterface
 {
-    
+    public function UserRank();
+    public function discountPoints();
     public function login(LoginRequest $request);
     public function signup(RegisterRequest $request);
     public function OTPCode(OTPRequest $request);

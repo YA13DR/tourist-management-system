@@ -8,6 +8,7 @@ class TravelBooking extends Model
 {
     protected $fillable = [
         'user_id',
+        'booking_id',
         'flight_id',
         'booking_date',
         'number_of_people',

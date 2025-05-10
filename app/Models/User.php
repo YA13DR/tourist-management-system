@@ -65,9 +65,10 @@ class User extends Authenticatable
         return $this->belongsTo(Country::class, 'CountryID', 'CountryID');
     }
 
-    /**
-     * Get the tours created by the user.
-     */
+    public function rank()
+    {
+        return $this->hasOne(UserRank::class);
+    }
     public function createdTours(): HasMany
     {
         return $this->hasMany(Tour::class, 'CreatedBy', 'UserID');

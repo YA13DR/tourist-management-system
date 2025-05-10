@@ -38,7 +38,7 @@ class TravelPackageResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->whereHas('tour', function ($query) {
+            ->whereHas('agency', function ($query) {
                 $query->where('admin_id', auth()->id());
             });
     }
@@ -46,13 +46,9 @@ class TravelPackageResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('agency_id')
-                ->label('Agency')
-                ->relationship('agency', 'name')
-                ->live()
-                ->required(),
-                Forms\Components\Hidden::make('tour_id')
-                ->default(fn () => \App\Models\Tour::where('admin_id', auth()->id())->value('id')),
+                
+                Forms\Components\Hidden::make('agency_id')
+                ->default(fn () => TravelAgency::where('admin_id', auth()->id())->value('id')),
                 
                 Forms\Components\TextInput::make('name')
                     ->required()
@@ -94,9 +90,6 @@ class TravelPackageResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('agency.name')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('durationDays')

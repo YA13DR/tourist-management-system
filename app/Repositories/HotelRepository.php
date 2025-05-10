@@ -10,6 +10,7 @@ use App\Models\HotelBooking;
 use App\Models\RoomAvailability;
 use App\Models\RoomType;
 use App\Traits\ApiResponse;
+use App\Traits\HandlesUserPoints;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +18,7 @@ use Illuminate\Http\Request;
 
 class HotelRepository implements HotelInterface
 {
-    use ApiResponse;
+    use ApiResponse,HandlesUserPoints;
 
     public function showHotel($id){
         $hotel = Hotel::with('images','roomTypes')
@@ -158,6 +159,7 @@ class HotelRepository implements HotelInterface
         if (!$hotelRoom) {
             return $this->error('hotelRoom not found', 404);
         }
+        $discount = $hotel->discount ?? 0;
         $checkInDate = Carbon::parse($request->checkInDate);
         $checkOutDate = $checkInDate->copy()->addDays($request->numberOfDays);
 
@@ -195,11 +197,15 @@ class HotelRepository implements HotelInterface
         $bookingReference = 'HB-' . strtoupper(uniqid());
         $totalCost = $hotelRoom->basePrice * $request->numberOfRooms * $request->numberOfDays;
 
+        $discountAmount = ($discount > 0) ? ($totalCost * $discount / 100) : 0;
+        $totalCostAfterDiscount = $totalCost - $discountAmount;
+
         $booking = Booking::create([
             'bookingReference' => $bookingReference,
             'user_id' => auth('sanctum')->id(),
             'bookingType' => 2, 
-            'totalPrice' => $totalCost,
+            'totalPrice' => $totalCostAfterDiscount, 
+        'discountAmount' => $discountAmount,
             'paymentStatus' => 1,
         ]);
         $RoomReservation = HotelBooking::create([
@@ -212,9 +218,9 @@ class HotelRepository implements HotelInterface
             'numberOfGuests' => $request->numberOfGuests,
             'numberOfRooms' => $request->numberOfRooms,
             'booking_id' => $booking->id,
-            'cost' => $hotelRoom->basePrice * $request->numberOfRooms * $request->numberOfDays,
+            'cost' => $totalCostAfterDiscount,
         ]);
-
+        $this->addPointsFromAction(auth('sanctum')->user(), 'book_hotel', 1);
         return $this->success('Nearby Hotels retrieved successfully', [
             'bookingReference' => $booking->bookingReference,
             'hotel' => $RoomReservation->hotel_id,
@@ -224,6 +230,7 @@ class HotelRepository implements HotelInterface
             'numberOfGuests' => $RoomReservation->numberOfGuests,
             'numberOfRoom' => $RoomReservation->numberOfRoom,
             'cost' => $RoomReservation->cost,
+        'discountAmount' => $discountAmount,
         ]);
     }
 

@@ -49,12 +49,15 @@ class RestaurantSubAdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/RestaurantSubAdmin/Pages'), for: 'App\\Filament\\RestaurantSubAdmin\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                \App\Filament\RestaurantSubAdmin\Pages\RestaurantDiscountEdit::class,
             ])
             ->discoverWidgets(in: app_path('Filament/RestaurantSubAdmin/Widgets'), for: 'App\\Filament\\RestaurantSubAdmin\\Widgets')
             ->widgets([
                 RestaurantPanelChart::class,
                 RestaurantBookingPanelChart::class,
                 RestaurantOverview::class,
+                
+                // \App\Filament\RestaurantSubAdmin\Pages\RestaurantDiscountEdit::class,
                 
             ])
             ->resources([

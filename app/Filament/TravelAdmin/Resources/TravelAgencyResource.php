@@ -56,7 +56,7 @@ class TravelAgencyResource extends Resource
                 Forms\Components\Select::make('location_id')
                     ->label('Location')
                     ->relationship('location', 'name') 
-                    ->searchable()
+                    
                     ->required(),
                 Forms\Components\TextInput::make('averageRating')
                     ->required()
@@ -99,28 +99,28 @@ class TravelAgencyResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('AgencyName')
+                Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('LocationID')
+                Tables\Columns\TextColumn::make('location.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('AverageRating')
+                Tables\Columns\TextColumn::make('averageRating')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('TotalRatings')
+                Tables\Columns\TextColumn::make('totalRatings')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('LogoURL')
+                Tables\Columns\TextColumn::make('logoURL')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('Website')
+                Tables\Columns\TextColumn::make('website')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('Phone')
+                Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('Email')
+                Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('IsActive')
+                Tables\Columns\IconColumn::make('isActive')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('ManagerID')
+                Tables\Columns\TextColumn::make('admin_id')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')

@@ -15,4 +15,5 @@ interface TravelInterface
     public function getAllAgency();
 
     public function bookFlight($id, TravelBookingRequest $request);
+    public function bookFlightByPoint($id, TravelBookingRequest $request);
 }

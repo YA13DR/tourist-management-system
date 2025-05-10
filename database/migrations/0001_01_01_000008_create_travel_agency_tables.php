@@ -32,7 +32,6 @@ return new class extends Migration
         Schema::create('TravelPackages', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('agency_id')->constrained('TravelAgencies', 'id');
-            $table->unsignedBigInteger('tour_id')->constrained('Tours', 'id');
             $table->string('name')->notNull();
             $table->text('description')->nullable();
             $table->integer('durationDays')->notNull();

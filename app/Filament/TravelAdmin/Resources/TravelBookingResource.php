@@ -37,7 +37,7 @@ class TravelBookingResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->whereHas('agency', function ($query) {
+            ->whereHas('flight.agency', function ($query) {
                 $query->where('admin_id', auth()->id());
             });
     }
@@ -53,7 +53,27 @@ class TravelBookingResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('user.firstName')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('flight.flight_number')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('booking_date')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('number_of_people')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('total_price')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->searchable(),
+               
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

@@ -6,7 +6,10 @@ use App\Interface\AuthInterface;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\OTPRequest;
+use App\Models\DiscountPoint;
+use App\Models\PointRule;
 use App\Models\User;
+use App\Models\UserRank;
 use App\Notifications\OTPNotification;
 use Twilio\Rest\Client;
 use App\Traits\ApiResponse;
@@ -17,6 +20,37 @@ class authRepository implements AuthInterface
 {
     use ApiResponse;
 
+    public function UserRank(){
+
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return $this->error('User not authenticated', 401);
+        }
+        $rank = UserRank::where('user_id',$user->id)->first();
+        if ($rank) {
+            return $this->success('Successful', [
+                'rank' => $rank->points_earned,
+            ], 200);
+        }
+
+        return $this->error('Error', 401);
+    }
+    public function discountPoints(){
+        $discountActions = PointRule::select('action', 'points')->get();
+
+    if ($discountActions->isEmpty()) {
+        return $this->error('No available discount actions found', 404);
+    }
+
+    return $this->success('Available discount actions', [
+        'discounts' => $discountActions->map(function ($item) {
+            return [
+                'action' => $item->action,
+                'points' => $item->points,
+            ];
+        }),
+    ], 200);
+    }
     public function login(LoginRequest $request){
         $request->validated($request->all());
 

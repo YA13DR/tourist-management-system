@@ -95,18 +95,6 @@ return new class extends Migration
             $table->dateTime('CreatedAt')->default(now());
         });
 
-        // User Sessions table
-        // Schema::create('UserSessions', function (Blueprint $table) {
-        //     $table->id('SessionID');
-        //     $table->foreignId('UserID')->constrained('users', 'id');
-        //     $table->string('SessionToken')->notNull();
-        //     $table->string('IPAddress')->nullable();
-        //     $table->string('DeviceInfo')->nullable();
-        //     $table->dateTime('LoginTime')->default(now());
-        //     $table->dateTime('LogoutTime')->nullable();
-        //     $table->boolean('IsActive')->default(true);
-        // });
-
         // Audit Log table
         Schema::create('AuditLog', function (Blueprint $table) {
             $table->id('LogID');
@@ -121,11 +109,33 @@ return new class extends Migration
         });
 
         // User Ranks table
-        Schema::create('UserRanks', function (Blueprint $table) {
-            $table->id('RankID');
-            $table->foreignId('UserID')->constrained('users', 'id');
-            $table->string('RankName')->nullable();
-            $table->integer('PointsEarned')->nullable();
+        Schema::create('ranks', function (Blueprint $table) {
+            $table->id();
+            $table->enum('name', ['Starter', 'Bronze', 'Silver', 'Gold', 'Platinum'])->nullable();
+            $table->integer('min_points'); 
+            $table->timestamps();
+        });
+
+        Schema::create('user_ranks', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');            
+            $table->foreignId('rank_id')->nullable()->constrained('ranks')->nullOnDelete();
+            $table->integer('points_earned')->default(0);
+            $table->timestamps();
+        });
+       
+        Schema::create('point_rules', function (Blueprint $table) {
+            $table->id();
+            $table->string('action'); 
+            $table->integer('points'); 
+            $table->timestamps();
+        });
+        Schema::create('discount_points', function (Blueprint $table) {
+            $table->id();
+            $table->enum('action', ['book_flight', 'book_tour', 'book_hotel','add_restaurant_order', 'book_restaurant']);
+            $table->integer('required_points');
+            $table->decimal('discount_percentage', 5, 2); 
+            $table->timestamps();
         });
 
         // Tour Translations table

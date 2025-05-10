@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->notNull();
             $table->text('description')->nullable();
+            $table->double('discount')->nullable();
             $table->foreignId('location_id')->nullable()->constrained('Locations', 'id');
             $table->decimal('Latitude', 10, 7)->nullable();
             $table->decimal('Longitude', 10, 7)->nullable();

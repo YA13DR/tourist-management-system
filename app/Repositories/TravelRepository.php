@@ -6,13 +6,17 @@ use App\Http\Requests\travelBookingRequest;
 use App\Interface\PackageInterface;
 use App\Interface\TravelInterface;
 use App\Models\Booking;
+use App\Models\DiscountPoint;
 use App\Models\PackageBooking;
+use App\Models\Rank;
 use App\Models\TravelAgency;
 use App\Models\TravelBooking;
 use App\Models\TravelFlight;
 use App\Models\TravelPackage;
 use App\Models\Favourite;
+use App\Models\UserRank;
 use App\Traits\ApiResponse;
+use App\Traits\HandlesUserPoints;
 use Auth;
 use Carbon\Carbon;
 use DB;
@@ -20,7 +24,7 @@ use Request;
 
 class TravelRepository implements TravelInterface
 {
-    use ApiResponse;
+    use ApiResponse , HandlesUserPoints;
 
     public function getAllFlights()
     {
@@ -101,15 +105,13 @@ class TravelRepository implements TravelInterface
             return $this->error('Flight not found', 404);
         }
 
-        $now = Carbon::now();
-
-        if ($flight->departure_time <= $now) {
+        if ($flight->departure_time <= now()) {
             return $this->error('Cannot book a flight that has already departed.', 400);
         }
 
         $alreadyBookedSeats = TravelBooking::where('flight_id', $flight->id)
-        ->where('status', '!=', 'cancelled') 
-        ->sum('number_of_people');
+            ->where('status', '!=', 'cancelled')
+            ->sum('number_of_people');
 
         $remainingSeats = $flight->available_seats - $alreadyBookedSeats;
 
@@ -120,30 +122,101 @@ class TravelRepository implements TravelInterface
         $bookingReference = 'FB-' . strtoupper(uniqid());
         $totalCost = $flight->price * $request->number_of_people;
 
-            $booking = Booking::create([
-                'bookingReference' => $bookingReference,
-                'user_id' => auth('sanctum')->id(),
-                'bookingType' => 2, 
-                'totalPrice' => $totalCost,
-                'paymentStatus' => 1,
-            ]);
+        $booking = Booking::create([
+            'bookingReference' => $bookingReference,
+            'user_id' => auth('sanctum')->id(),
+            'bookingType' => 2,
+            'totalPrice' => $totalCost,
+            'paymentStatus' => 1,
+        ]);
 
-            $travelBooking = TravelBooking::create([
-                'user_id' => auth('sanctum')->id(),
-                'flight_id' => $flight->id,
-                'number_of_people' => $request->number_of_people,
-                'booking_date' => now()->toDateString(),
-                'total_price' => $totalCost,
-                'status' => 'confirmed',
-                'booking_id' => $booking->id, 
-            ]);
+        $travelBooking = TravelBooking::create([
+            'user_id' => auth('sanctum')->id(),
+            'booking_id' => $booking->id,
+            'flight_id' => $flight->id,
+            'number_of_people' => $request->number_of_people,
+            'booking_date' => now()->toDateString(),
+            'total_price' => $totalCost,
+            'status' => 'confirmed',
+        ]);
 
-            return $this->success('Flight booked successfully', [
-                'bookingReference' => $booking->bookingReference,
-                'reservation_id' => $travelBooking->id,
-                'flight_id' => $flight->id,
-                'departure_time' => $flight->departure_time,
-                'total_cost' => $totalCost,
-            ]);
+        $this->addPointsFromAction(auth('sanctum')->user(), 'book_flight', $request->number_of_people);
+
+        return $this->success('Flight booked successfully', [
+            'bookingReference' => $booking->bookingReference,
+            'reservation_id' => $travelBooking->id,
+            'flight_id' => $flight->id,
+            'departure_time' => $flight->departure_time,
+            'total_cost' => $totalCost,
+        ]);
+    }
+
+    public function bookFlightByPoint($id, TravelBookingRequest $request){
+        $flight = TravelFlight::find($id);
+
+        if (!$flight) {
+            return $this->error('Flight not found', 404);
+        }
+
+        if ($flight->departure_time <= now()) {
+            return $this->error('Cannot book a flight that has already departed.', 400);
+        }
+
+        $alreadyBookedSeats = TravelBooking::where('flight_id', $flight->id)
+            ->where('status', '!=', 'cancelled')
+            ->sum('number_of_people');
+
+        $remainingSeats = $flight->available_seats - $alreadyBookedSeats;
+
+        if ($request->number_of_people > $remainingSeats) {
+            return $this->error('Not enough available seats. Only ' . $remainingSeats . ' remaining.', 400);
+        }
+
+        $user = auth('sanctum')->user();
+        $userRank = $user->rank ?? new UserRank(['user_id' => $user->id]);
+        $userPoints = $userRank->points_earned ?? 0;
+
+        $rule = DiscountPoint::where('action', 'book_flight')->first();
+
+        if (!$rule || $userPoints < $rule->required_points) {
+            return $this->error('You do not have enough reward points to book this flight. Minimum required: ' . ($rule->required_points ?? 'N/A'), 403);
+        }
+
+        $discount = ($flight->price * $request->number_of_people) * ($rule->discount_percentage / 100);
+        $totalCost = ($flight->price * $request->number_of_people) - $discount;
+
+        $booking = Booking::create([
+            'bookingReference' => 'FB-' . strtoupper(uniqid()),
+            'user_id' => $user->id,
+            'bookingType' => 2,
+            'totalPrice' => $totalCost,
+            'paymentStatus' => 1,
+        ]);
+
+        $travelBooking = TravelBooking::create([
+            'user_id' => $user->id,
+            'booking_id' => $booking->id,
+            'flight_id' => $flight->id,
+            'number_of_people' => $request->number_of_people,
+            'booking_date' => now()->toDateString(),
+            'total_price' => $totalCost,
+            'discountAmount' => $discount,
+            'paymentStatus' => 1,
+            'bookingDate' => now(), 
+            'status' => 'confirmed',
+        ]);
+
+        $userRank->points_earned -= $rule->required_points;
+        $userRank->save();
+
+        return $this->success('Flight booked successfully with discount applied.', [
+            'bookingReference' => $booking->bookingReference,
+            'reservation_id' => $travelBooking->id,
+            'flight_id' => $flight->id,
+            'departure_time' => $flight->departure_time,
+            'total_cost' => $totalCost,
+            'discount_applied' => true,
+            'discount_amount' => $discount,
+        ]);
     }
 }

@@ -17,6 +17,7 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBooking;
 use App\Models\RestaurantTable;
 use App\Models\User;
+use App\Traits\HandlesUserPoints;
 use Illuminate\Http\Request;
 use Twilio\Rest\Client;
 use App\Traits\ApiResponse;
@@ -25,7 +26,7 @@ use Illuminate\Support\Facades\Hash;
 
 class RestaurantRepository implements RestaurantInterface
 {
-    use ApiResponse;
+    use ApiResponse,HandlesUserPoints;
 
     public function showRestaurant($id)
         {
@@ -152,13 +153,19 @@ class RestaurantRepository implements RestaurantInterface
         if ($countReservations >= $maxTables) {
             return $this->error('No tables available for this date', 400);
         }
-        $bookingReference = 'RB-' . strtoupper(uniqid());  
+        $bookingReference = 'RB-' . strtoupper(uniqid());
+        $discount = $restaurant->discount ?? 0;  
         $totalPrice = $restaurant->cost;  
+
+        $discountAmount = ($discount > 0) ? ($totalPrice * $discount / 100) : 0;
+        $totalPriceAfterDiscount = $totalPrice - $discountAmount;
+
         $booking = Booking::create([
             'bookingReference' => $bookingReference,
             'user_id' => auth('sanctum')->id(),
             'bookingType' => 4, 
-            'totalPrice' => $totalPrice,
+            'totalPrice' => $totalPriceAfterDiscount,
+            'discountAmount' => $discountAmount,
             'paymentStatus' => 1,  
         ]);
         if (!$booking) {
@@ -172,9 +179,10 @@ class RestaurantRepository implements RestaurantInterface
             'reservationDate' => $reservationDate,
             'reservationTime' => $reservationTime,
             'numberOfGuests' => $request->numberOfGuests,
-            'cost' =>$restaurant->cost, 
+            'cost' => $totalPriceAfterDiscount, 
         ]);
     
+        $this->addPointsFromAction(auth('sanctum')->user(), 'book_restaurant', 1); 
 
         return $this->success('Table reserved successfully', [
             'reservation_id' => $tableReservation->id,
@@ -183,6 +191,7 @@ class RestaurantRepository implements RestaurantInterface
             'table_id' => $tableReservation->table_id,
             'cost' => $tableReservation->cost,
             'bookingReference' => $booking->bookingReference,
+            'discountAmount' => $discountAmount,
         ]);
     }
 
@@ -225,6 +234,7 @@ class RestaurantRepository implements RestaurantInterface
             $booking->booking->totalPrice = $booking->cost;
             $booking->booking->save();
         }
+        $this->addPointsFromAction(auth('sanctum')->user(), 'add_restaurant_order', count($orderItems));
 
         return $this->success('Order added successfully', [
             'reservation_id' => $booking->id,
