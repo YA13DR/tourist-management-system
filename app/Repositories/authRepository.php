@@ -2,15 +2,25 @@
 
 namespace App\Repositories;
 
+use App\Http\Requests\FeedBackRequest;
+use App\Http\Requests\PayRequest;
+use App\Http\Requests\RatingRequest;
 use App\Interface\AuthInterface;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\OTPRequest;
+use App\Models\Booking;
 use App\Models\DiscountPoint;
+use App\Models\FeedBack;
+use App\Models\Payment;
 use App\Models\PointRule;
+use App\Models\Promotion;
+use App\Models\Rating;
 use App\Models\User;
 use App\Models\UserRank;
 use App\Notifications\OTPNotification;
+use Request;
+use Str;
 use Twilio\Rest\Client;
 use App\Traits\ApiResponse;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +29,43 @@ use Illuminate\Support\Facades\Hash;
 class authRepository implements AuthInterface
 {
     use ApiResponse;
+    public function payForBooking($id , PayRequest $request){
+        $request->validated();
+        $booking = Booking::find($id);
+
+        if (!$booking) {
+            return $this->error('Booking not found', 404);
+        }
+
+        if ($booking->paymentStatus == 2) {
+            return $this->error('This booking is already paid', 400);
+        }
+    
+        $amount = $request->amount;
+    
+        if ($amount < $booking->totalPrice) {
+            return $this->error('Paid amount is less than required total price', 400);
+        }
+        $payment = Payment::create([
+            'booking_id' => $booking->id,
+            'payment_reference' => 'PAY-' . strtoupper(Str::random(10)),
+            'amount' => $amount,
+            'paymentDate' => now(),
+            'paymentMethod' => $request->paymentMethod,
+            'transaction_id' => 'FAKE-' . strtoupper(Str::random(8)),
+            'status' => 2, 
+            'gateway_response' => json_encode(['message' => 'Fake payment completed']),
+        ]);
+    
+        $booking->update(['paymentStatus' => 2]);
+    
+        return $this->success('Payment completed successfully', [
+            'bookingReference' => $booking->bookingReference,
+            'amount' => $payment->amount,
+            'payment_method' => $payment->paymentMethod,
+            'payment_reference' => $payment->payment_reference,
+        ]);
+    }
 
     public function UserRank(){
 
@@ -50,6 +97,64 @@ class authRepository implements AuthInterface
             ];
         }),
     ], 200);
+    }
+
+    public function addRating(RatingRequest $request)
+    {
+        $user = auth('sanctum')->user();
+
+        if (!$user) {
+            return $this->error('User not authenticated', 401);
+        }
+
+        $request->validated($request->all());
+
+        $existing = Rating::where([
+            ['user_id', '=', $user->id],
+            ['rating_type', '=', $request['rating_type']]
+        ])->first();
+
+        if ($existing) {
+            return $this->error('You have already rated this booking for this entity type', 400);
+        }
+
+        Rating::create([
+            'user_id'       => $user->id,
+            'rating_type'   => $request['rating_type'],
+            'entity_id'     => $request['entity_id'],
+            'rating'        => $request['rating'],
+            'comment'       => $request['comment'],
+            'ratingdate'    => now(),
+            'isVisible'     => true,
+            'admin_response'=> null,
+        ]);
+
+        return $this->success('Rating submitted successfully');
+    }
+    public function submitFeedback(FeedBackRequest $request)
+    {
+        $request->validated($request->all());
+
+        $feedback = FeedBack::create([
+            'user_id' => Auth::id(),
+            'feedback_text' => $request['feedback_text'],
+            'feedback_type' => $request['feedback_type'],
+            'feedback_date' => now(),
+            'status' => 1
+        ]);
+
+        return $this->success('Feedback submitted successfully', $feedback);
+    }
+    public function getAvailablePromotions()
+    {
+        $now = now();
+
+        $promotions = Promotion::where('isActive', true)
+            ->where('start_date', '<=', $now)
+            ->where('end_date', '>=', $now)
+            ->get();
+
+        return $this->success('Available promotions', $promotions);
     }
     public function login(LoginRequest $request){
         $request->validated($request->all());

@@ -22,32 +22,26 @@ class Payment extends Model
      *
      * @var string
      */
-    protected $primaryKey = 'PaymentID';
+    protected $primaryKey = 'id';
 
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
-    public $timestamps = false;
-
+   
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'BookingID',
-        'PaymentReference',
-        'Amount',
-        'PaymentDate',
-        'PaymentMethod',
-        'TransactionID',
-        'Status',
-        'GatewayResponse',
-        'RefundAmount',
-        'RefundDate',
-        'RefundReason'
+        'booking_id',
+        'payment_reference',
+        'amount',
+        'paymentDate',
+        'paymentMethod',
+        'transaction_id',
+        'status',
+        'gateway_response',
+        'refund_amount',
+        'refund_date',
+        'refund_reason'
     ];
 
     /**

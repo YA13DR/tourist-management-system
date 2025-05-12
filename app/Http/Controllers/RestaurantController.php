@@ -44,6 +44,10 @@ class RestaurantController extends Controller
     {
         return $this->retaurantRepository->bookTable($id,$request);
     }
+    public function bookTableWithPromotion($id,RestaurantBookingRequest $request)
+    {
+        return $this->retaurantRepository->bookTableWithPromotion($id,$request);
+    }
     public function addOrder($id,RestaurantOrderRequest $request)
     {
         return $this->retaurantRepository->addOrder($id,$request);

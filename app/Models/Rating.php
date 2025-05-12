@@ -15,21 +15,14 @@ class Rating extends Model
      *
      * @var string
      */
-    protected $table = 'Ratings';
+    protected $table = 'ratings';
 
     /**
      * The primary key associated with the table.
      *
      * @var string
      */
-    protected $primaryKey = 'RatingID';
-
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
-    public $timestamps = false;
+    protected $primaryKey = 'id';
 
     /**
      * The attributes that are mass assignable.
@@ -37,15 +30,15 @@ class Rating extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'UserID',
-        'BookingID',
-        'RatingType',
-        'EntityID',
-        'Rating',
-        'Comment',
-        'RatingDate',
-        'IsVisible',
-        'AdminResponse'
+        'user_id',
+        'booking_id',
+        'rating_type',
+        'entity_id',
+        'rating',
+        'comment',
+        'rating_date',
+        'isVisible',
+        'admin_response'
     ];
 
     /**

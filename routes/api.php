@@ -13,13 +13,20 @@ use Illuminate\Support\Facades\Route;
 //login
 Route::post('/auth/login',[AuthController::class,'login']);
 Route::post('/auth/signup',[AuthController::class,'signup']);
-Route::get('/auth/userRank',[AuthController::class,'userRank']);
-Route::get('/auth/discountPoints',[AuthController::class,'discountPoints']);
-
-// // Location Management Routes
-// Route::prefix('locations')->group(function () {
-//     // Routes will be implemented here
-// });
+//user
+Route::middleware('auth:sanctum')->group(function () {
+  //point and Rank
+  Route::get('/auth/userRank',[AuthController::class,'userRank']);
+  Route::get('/auth/discountPoints',[AuthController::class,'discountPoints']);
+  //Rating
+  Route::post('/auth/addRating',[AuthController::class,'addRating']);
+  //FeedBack
+  Route::post('/auth/submitFeedback',[AuthController::class,'submitFeedback']);
+  //promotion
+  Route::get('/auth/getAvailablePromotions',[AuthController::class,'getAvailablePromotions']);
+  //payment
+  Route::post('/auth/payForBooking/{id}',[AuthController::class,'payForBooking']);
+});
 
 // // Package Management Routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -81,35 +88,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('restaurants/showMenuCategory/{id}',[RestaurantController::class,'showMenuCategory']);
     Route::get('restaurants/showAviableTable/{id}',[RestaurantController::class,'showAviableTable']);
     Route::post('restaurants/bookTable/{id}',[RestaurantController::class,'bookTable']);
+    Route::post('restaurants/bookTableWithPromotion/{id}',[RestaurantController::class,'bookTableWithPromotion']);
     Route::post('restaurants/addOrder/{id}',[RestaurantController::class,'addOrder']);
 });
+
+// // Location Management Routes
+// Route::prefix('locations')->group(function () {
+//     // Routes will be implemented here
+// });
 
 // // Taxi Service Management Routes
 // Route::prefix('taxi-services')->group(function () {
 //     // Routes will be implemented here
 // });
 
-// // Booking Management Routes
-// Route::prefix('bookings')->group(function () {
-//     // Routes will be implemented here
-// });
-
-// // Payment Management Routes
-// Route::prefix('payments')->group(function () {
-//     // Routes will be implemented here
-// });
-
-// // Rating and Feedback Routes
-// Route::prefix('ratings')->group(function () {
-//     // Routes will be implemented here
-// });
-
-// // Promotions and Marketing Routes
-// Route::prefix('promotions')->group(function () {
-//     // Routes will be implemented here
-// });
-
-// // System Management Routes
-// Route::prefix('system')->group(function () {
-//     // Routes will be implemented here
-// });

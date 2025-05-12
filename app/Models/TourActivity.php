@@ -14,7 +14,7 @@ class TourActivity extends Model
      *
      * @var string
      */
-    protected $table = 'TourActivities';
+    protected $table = 'TourActivites';
 
     /**
      * The primary key associated with the table.
@@ -26,6 +26,7 @@ class TourActivity extends Model
     protected $fillable = [
         'schedule_id',
         'acticity_id',
+        'isActive'
     ];
 
 

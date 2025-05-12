@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FeedBackRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\OTPRequest;
+use App\Http\Requests\PayRequest;
+use App\Http\Requests\RatingRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Interface\AuthInterface;
 use Illuminate\Http\Request;
@@ -15,6 +18,10 @@ class AuthController extends Controller
     {
         $this->authRepository = $authRepository;
     }
+    public function payForBooking($id,PayRequest $request)
+    {
+        return $this->authRepository->payForBooking($id,$request);
+    }
     public function UserRank()
     {
         return $this->authRepository->UserRank();
@@ -22,6 +29,18 @@ class AuthController extends Controller
     public function discountPoints()
     {
         return $this->authRepository->discountPoints();
+    }
+    public function addRating(RatingRequest $request)
+    {
+        return $this->authRepository->addRating($request);
+    }
+    public function submitFeedback(FeedBackRequest $request)
+    {
+        return $this->authRepository->submitFeedback($request);
+    }
+    public function getAvailablePromotions()
+    {
+        return $this->authRepository->getAvailablePromotions();
     }
     public function login(LoginRequest $request)
     {

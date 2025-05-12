@@ -13,6 +13,7 @@ use App\Models\Booking;
 use App\Models\Favourite;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use App\Models\Promotion;
 use App\Models\Restaurant;
 use App\Models\RestaurantBooking;
 use App\Models\RestaurantTable;
@@ -193,6 +194,107 @@ class RestaurantRepository implements RestaurantInterface
             'bookingReference' => $booking->bookingReference,
             'discountAmount' => $discountAmount,
         ]);
+    }
+    public function bookTableWithPromotion($id, RestaurantBookingRequest $request)
+    {
+        $restaurant = Restaurant::find($id);
+
+    if (!$restaurant) {
+        return $this->error('Restaurant not found', 404);
+    }
+
+    $reservationDate = $request->reservationDate;
+    $reservationTime = $request->reservationTime;
+
+    $maxTables = $restaurant->max_tables;
+    $countReservations = RestaurantBooking::where('restaurant_id', $restaurant->id)
+        ->where('reservationDate', $reservationDate)
+        ->count();
+
+    if ($countReservations >= $maxTables) {
+        return $this->error('No tables available for this date', 400);
+    }
+
+    $bookingReference = 'RB-' . strtoupper(uniqid());
+    $basePrice = $restaurant->cost;
+
+    $promotion = null;
+    $promotionCode = $request->promotion_code;
+
+    if ($promotionCode) {
+        $promotion = Promotion::where('promotion_code', $promotionCode)
+            ->where('isActive', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->where(function ($q) {
+                $q->where('applicable_type', 1) 
+                  ->orWhere('applicable_type', 5); 
+            })
+            ->first();
+
+        if (!$promotion || !$promotion->isActive) {
+            return $this->error('Invalid or expired promotion code', 400);
+        }
+
+        if ($basePrice < $promotion->minimum_purchase) {
+            return $this->error("Total must be at least {$promotion->minimum_purchase} to use this code.", 400);
+        }
+
+        if (!in_array($promotion->applicable_type, [null, 1, 5])) {
+            return $this->error('This code cannot be applied to this restaurant booking', 400);
+        }
+    }
+
+    $discountAmount = 0;
+    if ($promotion) {
+        $discountAmount = $promotion->discount_type == 1
+            ? ($basePrice * $promotion->discount_value / 100) 
+            : $promotion->discount_value;
+
+        $discountAmount = min($discountAmount, $basePrice);
+    }
+
+    $totalPriceAfterDiscount = $basePrice - $discountAmount;
+
+    $booking = Booking::create([
+        'bookingReference' => $bookingReference,
+        'user_id' => auth('sanctum')->id(),
+        'bookingType' => 4,
+        'totalPrice' => $totalPriceAfterDiscount,
+        'discountAmount' => $discountAmount,
+        'paymentStatus' => 1,
+    ]);
+
+    if (!$booking) {
+        return $this->error('Failed to create booking', 500);
+    }
+
+    $tableReservation = RestaurantBooking::create([
+        'booking_id' => $booking->id,
+        'user_id' => auth('sanctum')->id(),
+        'restaurant_id' => $restaurant->id,
+        'table_id' => rand(1, $restaurant->max_tables),
+        'reservationDate' => $reservationDate,
+        'reservationTime' => $reservationTime,
+        'numberOfGuests' => $request->numberOfGuests,
+        'cost' => $totalPriceAfterDiscount,
+    ]);
+
+    if ($promotion) {
+        $promotion->increment('current_usage');
+    }
+
+    $this->addPointsFromAction(auth('sanctum')->user(), 'book_restaurant', 1);
+
+    return $this->success('Table reserved successfully', [
+        'reservation_id' => $tableReservation->id,
+        'date' => $tableReservation->reservationDate,
+        'time' => $tableReservation->reservationTime,
+        'table_id' => $tableReservation->table_id,
+        'cost' => $tableReservation->cost,
+        'bookingReference' => $booking->bookingReference,
+        'discountAmount' => $discountAmount,
+    ]);
     }
 
     public function addOrder($id, RestaurantOrderRequest $request){

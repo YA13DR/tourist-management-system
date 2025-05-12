@@ -7,6 +7,7 @@ use App\Interface\TourInterface;
 use App\Models\Booking;
 use App\Models\DiscountPoint;
 use App\Models\Favourite;
+use App\Models\Promotion;
 use App\Models\Tour;
 use App\Models\TourBooking;
 use App\Models\UserRank;
@@ -200,6 +201,114 @@ class TourRepository implements TourInterface
             'cost' => $totalCost,
             'discount_applied' => true,
             'discount_amount' => $discountAmount,
+        ]);
+    }
+
+    public function bookTourWithPromo($id, TourBookingRequest $request){
+        $tour = Tour::find($id);
+
+        if (!$tour) {
+            return $this->error('Tour not found', 404);
+        }
+
+        $schedule = $tour->schedules()->where('isActive', true)->first();
+
+        if (!$schedule) {
+            return $this->error('No active schedule found for this tour.', 404);
+        }
+
+        $now = Carbon::now();
+        $startDate = Carbon::parse($schedule->startDate);
+
+        if ($now->greaterThanOrEqualTo($startDate->subDay())) {
+            return $this->error('Booking must be made at least one day before the tour start date.', 400);
+        }
+
+        $existingBookings = TourBooking::where('tour_id', $tour->id)->sum(DB::raw('numberOfAdults + numberOfChildren'));
+
+        $newBookingCount = $request->numberOfAdults + $request->numberOfChildren;
+        $totalAfterBooking = $existingBookings + $newBookingCount;
+
+        if ($totalAfterBooking > $tour->maxCapacity) {
+            return $this->error('Cannot book: capacity exceeded.', 400);
+        }
+
+        $bookingReference = 'TB-' . strtoupper(uniqid());
+        $totalCost = $tour->basePrice * $newBookingCount;
+
+        $promotion = null;
+        $promotionCode = $request->promotion_code;
+
+        if ($promotionCode) {
+            $promotion = Promotion::where('promotion_code', $promotionCode)
+                ->where('isActive', true)
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
+                ->where(function ($q) {
+                    $q->where('applicable_type', 1) 
+                    ->orWhere('applicable_type', 2); 
+                })
+                ->first();
+
+            if (!$promotion || !$promotion->isActive) {
+                return $this->error('Invalid or expired promotion code', 400);
+            }
+
+            if ($totalCost < $promotion->minimum_purchase) {
+                return $this->error("Total must be at least {$promotion->minimum_purchase} to use this code.", 400);
+            }
+
+            if (!in_array($promotion->applicable_type, [null, 1, 2])) {
+                return $this->error('This code cannot be applied to this tour booking', 400);
+            }
+        }
+
+        $discountAmount = 0;
+        if ($promotion) {
+            $discountAmount = $promotion->discount_type == 1
+                ? ($totalCost * $promotion->discount_value / 100) 
+                : $promotion->discount_value;
+
+            $discountAmount = min($discountAmount, $totalCost);
+        }
+
+        $totalCostAfterDiscount = $totalCost - $discountAmount;
+
+        $booking = Booking::create([
+            'bookingReference' => $bookingReference,
+            'user_id' => auth('sanctum')->id(),
+            'bookingType' => 1,
+            'totalPrice' => $totalCostAfterDiscount,
+            'paymentStatus' => 1, 
+        ]);
+
+        if (!$booking) {
+            return $this->error('Failed to create booking', 500);
+        }
+
+        $tourReservation = TourBooking::create([
+            'user_id' => auth('sanctum')->id(),
+            'tour_id' => $tour->id,
+            'schedule_id' => $schedule->id,
+            'numberOfAdults' => $request->numberOfAdults,
+            'numberOfChildren' => $request->numberOfChildren,
+            'booking_id' => $booking->id,
+            'cost' => $totalCostAfterDiscount,
+        ]);
+
+        if ($promotion) {
+            $promotion->increment('current_usage');
+        }
+
+        $this->addPointsFromAction(auth('sanctum')->user(), 'book_tour', $newBookingCount);
+
+        return $this->success('Tour booked successfully', [
+            'bookingReference' => $booking->bookingReference,
+            'reservation_id' => $tourReservation->id,
+            'tour' => $tourReservation->tour_id,
+            'schedule' => $tourReservation->schedule_id,
+            'cost' => $tourReservation->cost,
+            'discountAmount' => $discountAmount,
         ]);
     }
 

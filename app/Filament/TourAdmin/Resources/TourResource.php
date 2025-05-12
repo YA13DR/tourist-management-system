@@ -30,7 +30,7 @@ class TourResource extends Resource
         return Filament::auth()->check() 
          && (Filament::auth()->user()->role === 'super_admin' 
          
-         &&(
+         ||(
             Filament::auth()->user()->role === 'admin' 
             && Filament::auth()->user()->section === 'tour'
          ));
@@ -39,7 +39,7 @@ class TourResource extends Resource
     {
         return Filament::auth()->check()   
         && (Filament::auth()->user()->role === 'super_admin' 
-         &&(
+         ||(
             Filament::auth()->user()->role === 'admin' 
             && Filament::auth()->user()->section === 'tour'
          ));

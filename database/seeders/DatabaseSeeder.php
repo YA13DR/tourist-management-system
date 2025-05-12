@@ -17,7 +17,9 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             LocationSeeder::class,
             TravelAgencySeeder::class,
-            RestaurantSeeder::class
+            RestaurantSeeder::class,
+            TourSeeder::class,
+            HotelSeeder::class,
         ]);
     }
 }

@@ -12,101 +12,69 @@ return new class extends Migration
     public function up(): void
     {
         // Payments table
-        Schema::create('Payments', function (Blueprint $table) {
-            $table->id('PaymentID');
-            $table->foreignId('BookingID')->constrained('Bookings', 'id');
-            $table->string('PaymentReference')->unique()->notNull();
-            $table->decimal('Amount', 10, 2)->notNull();
-            $table->dateTime('PaymentDate')->default(now());
-            $table->integer('PaymentMethod')->notNull()->comment('1=Credit Card, 2=PayPal, 3=Bank Transfer');
-            $table->string('TransactionID')->nullable();
-            $table->integer('Status')->default(1)->comment('1=Pending, 2=Success, 3=Failed, 4=Refunded');
-            $table->text('GatewayResponse')->nullable();
-            $table->decimal('RefundAmount', 10, 2)->default(0);
-            $table->dateTime('RefundDate')->nullable();
-            $table->text('RefundReason')->nullable();
+        Schema::create('payments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('booking_id')->constrained('Bookings', 'id');
+            $table->string('payment_reference')->unique()->notNull();
+            $table->decimal('amount', 10, 2)->notNull();
+            $table->dateTime('paymentDate')->default(now());
+            $table->integer('paymentMethod')->notNull()->comment('1=Credit Card, 2=PayPal, 3=Bank Transfer');
+            $table->string('transaction_id')->nullable();
+            $table->integer('status')->default(1)->comment('1=Pending, 2=Success, 3=Failed, 4=Refunded');
+            $table->text('gateway_response')->nullable();
+            $table->decimal('refund_amount', 10, 2)->default(0);
+            $table->dateTime('refund_date')->nullable();
+            $table->text('refund_reason')->nullable();
+            $table->timestamps();
         });
 
         // Ratings table
-        Schema::create('Ratings', function (Blueprint $table) {
-            $table->id('RatingID');
-            $table->foreignId('UserID')->constrained('users', 'id');
-            $table->foreignId('BookingID')->constrained('Bookings', 'id');
-            $table->integer('RatingType')->notNull()->comment('1=Tour, 2=Hotel, 3=Taxi, 4=Restaurant, 5=Package, 6=Guide, 7=Driver');
-            $table->integer('EntityID')->notNull()->comment('TourID, HotelID, TaxiServiceID, RestaurantID, PackageID, GuideID, DriverID');
-            $table->integer('Rating')->notNull();
-            $table->text('Comment')->nullable();
-            $table->dateTime('RatingDate')->default(now());
-            $table->boolean('IsVisible')->default(true);
-            $table->text('AdminResponse')->nullable();
-            $table->unique(['UserID', 'BookingID', 'RatingType']);
+        Schema::create('ratings', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users', 'id');
+            $table->integer('rating_type')->notNull()->comment('1=Tour, 2=Hotel, 3=Taxi, 4=Restaurant, 5=Package, 6=Guide, 7=Driver');
+            $table->integer('entity_id')->notNull()->comment('tour_id, hotel_id, taxiService_id, restaurant_id, package_id, guide_id, driver_id');
+            $table->integer('rating')->notNull();
+            $table->text('comment')->nullable();
+            $table->dateTime('ratingdate')->default(now());
+            $table->boolean('isVisible')->default(true);
+            $table->text('admin_response')->nullable();
+            $table->unique(['user_id','rating_type']);
+            $table->timestamps();
         });
 
         // Feedback table
-        Schema::create('Feedback', function (Blueprint $table) {
-            $table->id('FeedbackID');
-            $table->foreignId('UserID')->nullable()->constrained('users', 'id');
-            $table->text('FeedbackText')->notNull();
-            $table->dateTime('FeedbackDate')->default(now());
-            $table->integer('FeedbackType')->notNull()->comment('1=App, 2=Service, 3=Other');
-            $table->integer('Status')->default(1)->comment('1=Unread, 2=Read, 3=Responded');
-            $table->text('ResponseText')->nullable();
-            $table->dateTime('ResponseDate')->nullable();
-            $table->foreignId('RespondedBy')->nullable()->constrained('users', 'id');
+        Schema::create('feedback', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->nullable()->constrained('users', 'id');
+            $table->text('feedback_text')->notNull();
+            $table->dateTime('feedback_date')->default(now());
+            $table->integer('feedback_type')->notNull()->comment('1=App, 2=Service, 3=Other');
+            $table->integer('status')->default(1)->comment('1=Unread, 2=Read, 3=Responded');
+            $table->text('response_text')->nullable();
+            $table->dateTime('response_date')->nullable();
+            $table->foreignId('responded_by')->nullable()->constrained('users', 'id');
+            $table->timestamps();
         });
 
         // Promotions table
-        Schema::create('Promotions', function (Blueprint $table) {
-            $table->id('PromotionID');
-            $table->string('PromotionCode')->unique()->notNull();
-            $table->text('Description')->nullable();
-            $table->integer('DiscountType')->notNull()->comment('1=Percentage, 2=Fixed Amount');
-            $table->decimal('DiscountValue', 10, 2)->notNull();
-            $table->decimal('MinimumPurchase', 10, 2)->default(0);
-            $table->dateTime('StartDate')->notNull();
-            $table->dateTime('EndDate')->notNull();
-            $table->integer('UsageLimit')->nullable();
-            $table->integer('CurrentUsage')->default(0);
-            $table->integer('ApplicableType')->nullable()->comment('1=All, 2=Tour, 3=Hotel, 4=Taxi, 5=Restaurant, 6=Package');
-            $table->boolean('IsActive')->default(true);
-            $table->foreignId('CreatedBy')->constrained('users', 'id');
-            $table->dateTime('CreatedAt')->default(now());
+        Schema::create('promotions', function (Blueprint $table) {
+            $table->id();
+            $table->string('promotion_code')->unique()->notNull();
+            $table->text('description')->nullable();
+            $table->integer('discount_type')->notNull()->comment('1=Percentage, 2=Fixed Amount');
+            $table->decimal('discount_value', 10, 2)->notNull();
+            $table->decimal('minimum_purchase', 10, 2)->default(0);
+            $table->dateTime('start_date')->notNull();
+            $table->dateTime('end_date')->notNull();
+            $table->integer('usage_limit')->nullable();
+            $table->integer('current_usage')->default(0);
+            $table->integer('applicable_type')->nullable()->comment('1=All, 2=Tour, 3=Hotel, 4=Taxi, 5=Restaurant, 6=Package ,7=Flight');
+            $table->boolean('isActive')->default(true);
+            $table->unsignedBigInteger('created_by')->constrained('admins', 'id');
+            $table->timestamps();
         });
 
-        // Wishlist table
-        Schema::create('Wishlist', function (Blueprint $table) {
-            $table->id('WishlistID');
-            $table->foreignId('UserID')->constrained('users', 'id');
-            $table->integer('ItemType')->notNull()->comment('1=Tour, 2=Hotel, 3=Restaurant, 4=Package');
-            $table->integer('ItemID')->notNull();
-            $table->dateTime('AddedDate')->default(now());
-            $table->unique(['UserID', 'ItemType', 'ItemID']);
-        });
-
-        // Notifications table
-        Schema::create('Notifications', function (Blueprint $table) {
-            $table->id('NotificationID');
-            $table->foreignId('UserID')->constrained('users', 'id');
-            $table->string('Title')->notNull();
-            $table->text('Message')->notNull();
-            $table->integer('NotificationType')->notNull()->comment('1=Booking, 2=Payment, 3=Tour, 4=System');
-            $table->integer('ReferenceID')->nullable();
-            $table->boolean('IsRead')->default(false);
-            $table->dateTime('CreatedAt')->default(now());
-        });
-
-        // Audit Log table
-        Schema::create('AuditLog', function (Blueprint $table) {
-            $table->id('LogID');
-            $table->foreignId('UserID')->nullable()->constrained('users', 'id');
-            $table->string('EntityType')->notNull();
-            $table->integer('EntityID')->notNull();
-            $table->string('Action')->notNull();
-            $table->text('OldValues')->nullable();
-            $table->text('NewValues')->nullable();
-            $table->string('IPAddress')->nullable();
-            $table->dateTime('LogDate')->default(now());
-        });
 
         // User Ranks table
         Schema::create('ranks', function (Blueprint $table) {
@@ -137,23 +105,49 @@ return new class extends Migration
             $table->decimal('discount_percentage', 5, 2); 
             $table->timestamps();
         });
+        
+        // Wishlist table
+        Schema::create('wishlist', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users', 'id');
+            $table->integer('item_type')->notNull()->comment('1=Tour, 2=Hotel, 3=Restaurant, 4=Package');
+            $table->integer('item_id')->notNull();
+            $table->dateTime('added_date')->default(now());
+            $table->unique(['user_id', 'item_type', 'item_id']);
+            $table->timestamps();
+        });
 
+        // Audit Log table
+        Schema::create('auditLog', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->nullable()->constrained('users', 'id');
+            $table->string('entity_type')->notNull();
+            $table->integer('entity_id')->notNull();
+            $table->string('action')->notNull();
+            $table->text('old_values')->nullable();
+            $table->text('new_values')->nullable();
+            $table->string('ip_address')->nullable();
+            $table->dateTime('log_date')->default(now());
+            $table->timestamps();
+        });
         // Tour Translations table
         Schema::create('TourTranslations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tour_id')->constrained('Tours', 'id');
             $table->string('languageCode');
             $table->text('translatedDescription');
+            $table->timestamps();
         });
 
         // Partnerships table
-        Schema::create('Partnerships', function (Blueprint $table) {
-            $table->id('PartnershipID');
-            $table->foreignId('GuideID')->nullable()->constrained('users', 'id');
-            $table->foreignId('HotelID')->nullable()->constrained('Hotels', 'id');
-            $table->foreignId('RestaurantID')->nullable()->constrained('Restaurants', 'id');
-            $table->foreignId('TaxiServiceID')->nullable()->constrained('TaxiServices', 'TaxiServiceID');
-            $table->decimal('DiscountPercentage', 5, 2)->nullable();
+        Schema::create('partnerships', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('admin_id')->nullable()->constrained('users', 'id');
+            $table->foreignId('hotel_id')->nullable()->constrained('Hotels', 'id');
+            $table->foreignId('restaurant_id')->nullable()->constrained('Restaurants', 'id');
+            $table->foreignId('taxiService_id')->nullable()->constrained('TaxiServices', 'TaxiServiceID');
+            $table->decimal('discount_percentage', 5, 2)->nullable();
+            $table->timestamps();
         });
     }
 

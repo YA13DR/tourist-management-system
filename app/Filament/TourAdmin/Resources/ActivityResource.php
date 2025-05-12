@@ -25,7 +25,6 @@ class ActivityResource extends Resource
         return Filament::auth()->check() 
          && (Filament::auth()->user()->role === 'super_admin' 
          
-         || Filament::auth()->user()->UserType === 'Admin' 
          ||(
             Filament::auth()->user()->role === 'admin' 
             && Filament::auth()->user()->section === 'tour'
@@ -34,8 +33,7 @@ class ActivityResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         return Filament::auth()->check()   
-        && (Filament::auth()->user()->role === 'super_admin'  
-        || Filament::auth()->user()->UserType === 'Admin' 
+        && (Filament::auth()->user()->role === 'super_admin' 
          ||(
             Filament::auth()->user()->role === 'admin' 
             && Filament::auth()->user()->section === 'tour'

@@ -14,6 +14,8 @@ interface RestaurantInterface
     public function showMenuCategory();
     public function showMenuItem($id);
     public function bookTable($id,RestaurantBookingRequest $request);
+    
+    public function bookTableWithPromotion($id, RestaurantBookingRequest $request);
     public function addOrder($id,RestaurantOrderRequest $request);
     public function showAviableTable($id);
 }
