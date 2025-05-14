@@ -25,7 +25,7 @@ class TourRepository implements TourInterface
         ->get()
         ->filter(fn($tour) => $tour->schedules->isNotEmpty()) 
         ->values(); 
-    $result = $tours->map(function($tour) {
+        $result = $tours->map(function($tour) {
         $user = auth()->user();
 
             $isFavourited = false;
@@ -36,9 +36,23 @@ class TourRepository implements TourInterface
                     'favoritable_type' => Tour::class,
                 ])->exists();
             }
+            $now = now();
+        $promotion = Promotion::where('isActive', true)
+            ->where('start_date', '<=', $now)
+            ->where('end_date', '>=', $now)
+            ->where('applicable_type', 1) 
+            ->orwhere('applicable_type', 2) 
+            ->first();
         return [
             'tour' => $tour,
             'is_favourited' => $isFavourited,
+            'promotion' => $promotion ? [
+                'promotion_code' => $promotion->promotion_code,
+                'description' => $promotion->description,
+                'discount_type' => $promotion->discount_type,
+                'discount_value' => $promotion->discount_value,
+                'minimum_purchase' => $promotion->minimum_purchase,
+            ] : null,
         ];
     });
         return $this->success('All tours retrieved successfully', [
@@ -63,14 +77,27 @@ class TourRepository implements TourInterface
                     'favoritable_type' => Tour::class,
                 ])->exists();
             }
-
+            $now = now();
+            $promotion = Promotion::where('isActive', true)
+                ->where('start_date', '<=', $now)
+                ->where('end_date', '>=', $now)
+                ->where('applicable_type', 1) 
+                ->orwhere('applicable_type', 2) 
+                ->first();
         return $this->success('Store retrieved successfully', [
                 'tour ' => $tour,
                 'is_favourited' => $isFavourited,
+                'promotion' => $promotion ? [
+                    'promotion_code' => $promotion->promotion_code,
+                    'description' => $promotion->description,
+                    'discount_type' => $promotion->discount_type,
+                    'discount_value' => $promotion->discount_value,
+                    'minimum_purchase' => $promotion->minimum_purchase,
+                ] : null,
         ]);
     }
 
-    public function bookTour($id,TourBookingRequest $request){
+    public function bookTourWithPromo($id,TourBookingRequest $request){
         $tour = Tour::find($id);
 
         if (!$tour) {
@@ -204,7 +231,7 @@ class TourRepository implements TourInterface
         ]);
     }
 
-    public function bookTourWithPromo($id, TourBookingRequest $request){
+    public function bookTour($id, TourBookingRequest $request){
         $tour = Tour::find($id);
 
         if (!$tour) {

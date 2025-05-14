@@ -13,22 +13,22 @@ return new class extends Migration
     {
         // Countries table
         Schema::create('Countries', function (Blueprint $table) {
-            $table->id('CountryID');
-            $table->string('CountryName')->notNull();
-            $table->string('CountryCode')->notNull();
-            $table->string('ContinentCode')->nullable();
-            $table->string('PhoneCode')->nullable();
-            $table->boolean('IsActive')->default(true);
+            $table->id();
+            $table->string('name')->notNull();
+            $table->string('code')->notNull();
+            $table->string('continent_code')->nullable();
+            $table->string('phone_code')->nullable();
+            $table->boolean('isActive')->default(true);
             $table->timestamps();
         });
 
         // Cities table
         Schema::create('Cities', function (Blueprint $table) {
-            $table->id('CityID');
-            $table->foreignId('CountryID')->constrained('Countries', 'CountryID');
-            $table->string('CityName')->notNull();
-            $table->boolean('IsPopular')->default(false);
-            $table->text('Description')->nullable();
+            $table->id();
+            $table->foreignId('country_id')->constrained('Countries', 'id');
+            $table->string('name')->notNull();
+            $table->boolean('isPopular')->default(false);
+            $table->text('description')->nullable();
             $table->timestamps();
         });
 

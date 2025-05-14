@@ -28,17 +28,16 @@ class TourResource extends Resource
     public static function canAccess(): bool
     {
         return Filament::auth()->check() 
-         && (Filament::auth()->user()->role === 'super_admin' 
-         
-         ||(
-            Filament::auth()->user()->role === 'admin' 
-            && Filament::auth()->user()->section === 'tour'
-         ));
+        && (Filament::auth()->user()->role === 'super_admin' 
+        ||(
+           Filament::auth()->user()->role === 'admin' 
+           && Filament::auth()->user()->section === 'tour'
+        ));
     }
     public static function shouldRegisterNavigation(): bool
     {
-        return Filament::auth()->check()   
-        && (Filament::auth()->user()->role === 'super_admin' 
+        return Filament::auth()->check() 
+         && (Filament::auth()->user()->role === 'super_admin' 
          ||(
             Filament::auth()->user()->role === 'admin' 
             && Filament::auth()->user()->section === 'tour'

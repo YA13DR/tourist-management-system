@@ -16,6 +16,10 @@ return new class extends Migration
             $table->id();
             $table->string('name')->notNull();
             $table->text('description')->nullable();
+            $table->string('city')->nullable();
+            $table->string('country')->nullable();
+            $table->decimal('Latitude', 10, 7)->nullable();
+            $table->decimal('Longitude', 10, 7)->nullable();
             $table->double('discount')->nullable();
             $table->integer('starRating')->nullable();
             $table->time('checkInTime')->nullable();

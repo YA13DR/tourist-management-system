@@ -34,7 +34,4 @@ class HotelController extends Controller
     public function showHistory( ){
         return $this->hotelRepository->showHistory();
     }
-    public function showReservationRoom( ){
-        return $this->hotelRepository->showReservationRoom();
-    }
 }

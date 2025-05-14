@@ -46,7 +46,11 @@ class Hotel extends Model
         'email',
         'isActive',
         'isFeatured',
-        'admin_id'
+        'admin_id',
+        'Latitude',
+        'Longitude',
+        'city',
+        'country'
     ];
 
     /**

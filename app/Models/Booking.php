@@ -104,7 +104,10 @@ class Booking extends Model
     {
         return $this->hasOne(PackageBooking::class, 'booking_id', 'id');
     }
-
+    public function travelBooking()
+    {
+        return $this->hasOne(TravelBooking::class, 'booking_id');
+    }
     /**
      * Get the payments for the booking.
      */

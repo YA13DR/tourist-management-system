@@ -26,6 +26,10 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/auth/getAvailablePromotions',[AuthController::class,'getAvailablePromotions']);
   //payment
   Route::post('/auth/payForBooking/{id}',[AuthController::class,'payForBooking']);
+  //booking
+  Route::get('/auth/getAllBookings',[AuthController::class,'getAllBookings']);
+  //booking
+  Route::post('/auth/getBookingHistory',[AuthController::class,'getBookingHistory']);
 });
 
 // // Package Management Routes

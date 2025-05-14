@@ -15,5 +15,4 @@ interface HotelInterface
     public function showAviableRoomType($id,Request $request);
     public function bookHotel($id,HotelBookingRequest $request);
     public function showHistory();
-    public function showReservationRoom();
 }

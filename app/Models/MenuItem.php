@@ -51,13 +51,13 @@ class MenuItem extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'Price' => 'decimal:2',
-        'IsVegetarian' => 'boolean',
-        'IsVegan' => 'boolean',
-        'IsGlutenFree' => 'boolean',
-        'Spiciness' => 'integer',
-        'IsAvailable' => 'boolean',
-        'IsPopular' => 'boolean',
+        'price' => 'decimal:2',
+        'isVegetarian' => 'boolean',
+        'isVegan' => 'boolean',
+        'isGlutenFree' => 'boolean',
+        'spiciness' => 'integer',
+        'isAvailable' => 'boolean',
+        'isPopular' => 'boolean',
     ];
 
     /**

@@ -48,6 +48,12 @@ class RestaurantRepository implements RestaurantInterface
                     'favoritable_type' => Restaurant::class,
                 ])->exists();
             }
+            $now = now();
+            $promotion = Promotion::where('isActive', true)
+                ->where('start_date', '<=', $now)
+                ->where('end_date', '>=', $now)
+                ->where('applicable_type', 5) 
+                ->first();
             $result = [];
             foreach ($restaurant->menuCategories as $menuCategorie) {
                 $restaurantData = [
@@ -69,6 +75,13 @@ class RestaurantRepository implements RestaurantInterface
                 'restaurant ' => $restaurant,
                 'category'=>$result,
                 'is_favourited' => $isFavourited,
+                'promotion' => $promotion ? [
+                    'promotion_code' => $promotion->promotion_code,
+                    'description' => $promotion->description,
+                    'discount_type' => $promotion->discount_type,
+                    'discount_value' => $promotion->discount_value,
+                    'minimum_purchase' => $promotion->minimum_purchase,
+                ] : null,
             ]);
         }
 
@@ -84,10 +97,23 @@ class RestaurantRepository implements RestaurantInterface
                     'favoritable_type' => Restaurant::class,
                 ])->exists();
             }
+            $now = now();
+            $promotion = Promotion::where('isActive', true)
+                ->where('start_date', '<=', $now)
+                ->where('end_date', '>=', $now)
+                ->where('applicable_type', 5) 
+                ->first();
             return [
                 'restaurant' => $restaurant,
                 'categories' => $restaurant->menuCategories, 
                 'is_favourited' => $isFavourited,
+                'promotion' => $promotion ? [
+                    'promotion_code' => $promotion->promotion_code,
+                    'description' => $promotion->description,
+                    'discount_type' => $promotion->discount_type,
+                    'discount_value' => $promotion->discount_value,
+                    'minimum_purchase' => $promotion->minimum_purchase,
+                ] : null,
             ];
         });
         return $this->success('All restaurants retrieved successfully', [
@@ -136,7 +162,7 @@ class RestaurantRepository implements RestaurantInterface
             'menu_item' => $menuItem,
         ]);
     }
-    public function bookTable($id,RestaurantBookingRequest $request){
+    public function bookTableWithPromotion($id,RestaurantBookingRequest $request){
         $restaurant = Restaurant::find($id);
 
         if (!$restaurant) {
@@ -156,6 +182,7 @@ class RestaurantRepository implements RestaurantInterface
         }
         $bookingReference = 'RB-' . strtoupper(uniqid());
         $discount = $restaurant->discount ?? 0;  
+        
         $totalPrice = $restaurant->cost;  
 
         $discountAmount = ($discount > 0) ? ($totalPrice * $discount / 100) : 0;
@@ -195,7 +222,7 @@ class RestaurantRepository implements RestaurantInterface
             'discountAmount' => $discountAmount,
         ]);
     }
-    public function bookTableWithPromotion($id, RestaurantBookingRequest $request)
+    public function bookTable($id, RestaurantBookingRequest $request)
     {
         $restaurant = Restaurant::find($id);
 
@@ -326,7 +353,7 @@ class RestaurantRepository implements RestaurantInterface
                 'subtotal' => $subtotal,
             ];
 
-            $totalFoodCost += $subtotal; 
+            $totalFoodCost += $subtotal;  
         }
         $booking->order = json_encode($finalOrder);
         $booking->cost += $totalFoodCost;

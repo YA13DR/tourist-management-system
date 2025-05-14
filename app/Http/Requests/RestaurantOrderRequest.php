@@ -22,7 +22,9 @@ class RestaurantOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'orderItems'=>'required'
+            'orderItems' => 'required|array|min:1',
+            'orderItems.*.item_id' => 'required|exists:MenuItems,id',
+            'orderItems.*.quantity' => 'required|integer|min:1',
         ];
     }
 }

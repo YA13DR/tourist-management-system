@@ -29,15 +29,43 @@ class TravelRepository implements TravelInterface
 
     public function getAllFlights()
     {
-        $flights = TravelFlight::with(['agency', 'departure', 'arrival'])
-            ->get()
-            ->filter(fn($flight) => $flight->available_seats > 0)
-            ->values();
+        $flights = TravelFlight::with(['agency', 'departure', 'arrival'])->get();
+    
+    $result = $flights->map(function ($flight) {
+        $user = auth()->user();
+        $isFavourited = false;
 
+        if ($user) {
+            $isFavourited = Favourite::where([
+                'user_id' => $user->id,
+                'favoritable_id' => $flight->id,
+                'favoritable_type' => TravelFlight::class,
+            ])->exists();
+            }
+            $now = now();
+            $promotion = Promotion::where('isActive', true)
+                ->where('start_date', '<=', $now)
+                ->where('end_date', '>=', $now)
+                ->where('applicable_type', 1) 
+                ->orwhere('applicable_type', 6) 
+                ->first();
             
-            return $this->success('All flights retrieved successfully', [
-                'flig$flights' => $flights,
-            ]);
+            return [
+                'flight' => $flight,
+                'is_favourited' => $isFavourited,
+                'promotion' => $promotion ? [
+                    'promotion_code' => $promotion->promotion_code,
+                    'description' => $promotion->description,
+                    'discount_type' => $promotion->discount_type,
+                    'discount_value' => $promotion->discount_value,
+                    'minimum_purchase' => $promotion->minimum_purchase,
+                ] : null,
+            ];
+        });
+    
+        return $this->success('All flights retrieved successfully', [
+            'flights' => $result,
+        ]);
     }
 
     public function getFlight($id)
@@ -47,9 +75,35 @@ class TravelRepository implements TravelInterface
         if (!$flight) {
             return $this->error('Flight not found', 404);
         }
+    
+        $user = auth()->user();
+        $isFavourited = false;
+    
+        if ($user) {
+            $isFavourited = Favourite::where([
+                'user_id' => $user->id,
+                'favoritable_id' => $flight->id,
+                'favoritable_type' => TravelFlight::class,
+            ])->exists();
+        }
+        $now = now();
+        $promotion = Promotion::where('isActive', true)
+            ->where('start_date', '<=', $now)
+            ->where('end_date', '>=', $now)
+            ->where('applicable_type', 1) 
+            ->orwhere('applicable_type', 6) 
+            ->first();
 
-        return $this->success('All flig$flight retrieved successfully', [
-                'flig$flight' => $flight,
+        return $this->success('Flight retrieved successfully', [
+            'flight' => $flight,
+            'is_favourited' => $isFavourited,
+            'promotion' => $promotion ? [
+                'promotion_code' => $promotion->promotion_code,
+                'description' => $promotion->description,
+                'discount_type' => $promotion->discount_type,
+                'discount_value' => $promotion->discount_value,
+                'minimum_purchase' => $promotion->minimum_purchase,
+            ] : null,
         ]);
     }
 
@@ -98,7 +152,7 @@ class TravelRepository implements TravelInterface
     }
 
 
-    public function bookFlight($id, TravelBookingRequest $request)
+    public function bookFlightWithPromotion($id, TravelBookingRequest $request)
     {
         $flight = TravelFlight::find($id);
 
@@ -221,7 +275,7 @@ class TravelRepository implements TravelInterface
         ]);
     }
 
-    public function bookFlightWithPromotion($id, TravelBookingRequest $request){
+    public function bookFlight($id, TravelBookingRequest $request){
         $flight = TravelFlight::find($id);
 
         if (!$flight) {

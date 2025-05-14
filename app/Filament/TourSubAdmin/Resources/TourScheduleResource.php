@@ -4,6 +4,7 @@ namespace App\Filament\TourSubAdmin\Resources;
 
 use App\Filament\TourSubAdmin\Resources\TourScheduleResource\Pages;
 use App\Filament\TourSubAdmin\Resources\TourScheduleResource\RelationManagers;
+use App\Models\Tour;
 use App\Models\TourSchedule;
 use Filament\Facades\Filament;
 use Filament\Forms;
@@ -24,16 +25,37 @@ class TourScheduleResource extends Resource
     protected static ?int $navigationSort = 4;
     public static function canAccess(): bool
     {
-        return Filament::auth()->check() 
-         && Filament::auth()->user()->role === 'sub_admin' 
-         && Filament::auth()->user()->section === 'tour'
-         ;
+        $user = Filament::auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+    
+        if ($user->role === 'super_admin' || ($user->role === 'admin' && $user->section === 'tour')) {
+      
+            $tour = Tour::where('admin_id', $user->id)->first();
+            
+            return $tour !== null;
+        }
+    
+        return false;
     }
     public static function shouldRegisterNavigation(): bool
     {
-        return Filament::auth()->check()  
-        && Filament::auth()->user()->role === 'sub_admin' 
-            && Filament::auth()->user()->section === 'tour';
+        $user = Filament::auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+    
+        if ($user->role === 'super_admin' || ($user->role === 'admin' && $user->section === 'tour')) {
+      
+            $tour = Tour::where('admin_id', $user->id)->first();
+            
+            return $tour !== null;
+        }
+    
+        return false;
     }
     public static function getEloquentQuery(): Builder
     {

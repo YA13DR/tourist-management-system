@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Models\Tour;
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -38,7 +40,7 @@ class TourSubAdminPanelProvider extends PanelProvider
             ->font('Roboto Mono')
             ->brandName('PILOT')
             ->brandName(function () {
-                $tour = \App\Models\Tour::where('admin_id', auth()->id())->first();
+                $tour = Tour::where('admin_id', auth()->id())->first();
                 return $tour?->name ?? 'tour';
             })
             ->discoverResources(in: app_path('Filament/TourSubAdmin/Resources'), for: 'App\\Filament\\TourSubAdmin\\Resources')
