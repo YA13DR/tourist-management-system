@@ -11,68 +11,36 @@ class RoomType extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'RoomTypes';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'hotel_id',
         'name',
         'number',
         'description',
-        'maxOccupancy',
-        'basePrice',
-        'discountPercentage',
+        'max_occupancy',
+        'base_price',
+        'discount_percentage',
         'size',
-        'bedType',
-        'imageURL',
-        'isActive'
+        'bed_type',
+        'image',
+        'is_active'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'basePrice' => 'decimal:2',
-        'discountPercentage' => 'decimal:2',
-        'isActive' => 'boolean',
+        'base_price' => 'decimal:2',
+        'discount_percentage' => 'decimal:2',
+        'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the hotel that owns the room type.
-     */
     public function hotel(): BelongsTo
     {
         return $this->belongsTo(Hotel::class, 'hotel_id', 'id');
     }
 
-    /**
-     * Get the availability for the room type.
-     */
     public function availability(): HasMany
     {
         return $this->hasMany(RoomAvailability::class, 'roomType_id', 'id');
     }
 
-    /**
-     * Get the bookings for the room type.
-     */
     public function bookings(): HasMany
     {
         return $this->hasMany(HotelBooking::class, 'roomType_id', 'id');

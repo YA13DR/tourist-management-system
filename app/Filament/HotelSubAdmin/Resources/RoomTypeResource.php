@@ -57,35 +57,36 @@ class RoomTypeResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+                    Forms\Components\Toggle::make('is_active')
+                    ->required(),
                 Forms\Components\Textarea::make('description')
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('number')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('maxOccupancy')
+                Forms\Components\TextInput::make('max_occupancy')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('basePrice')
+                Forms\Components\TextInput::make('base_price')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('discountPercentage')
+                Forms\Components\TextInput::make('discount_percentage')
                     ->required()
                     ->numeric()
                     ->default(0.00),
                 Forms\Components\TextInput::make('size')
                     ->maxLength(255)
                     ->default(null),
-                Forms\Components\TextInput::make('bedType')
+                Forms\Components\TextInput::make('bed_type')
                     ->maxLength(255)
                     ->default(null),
-                    FileUpload::make('imageURL')
+                    FileUpload::make('image')
                 ->label('Hotel Image')
                 ->image()
                 ->directory('hotel_images') 
                 ->visibility('public')
                 ->required(),
-                Forms\Components\Toggle::make('isActive')
-                    ->required(),
+               
             ]);
     }
     public static function table(Table $table): Table
@@ -99,24 +100,24 @@ class RoomTypeResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('number')
                     ->numeric(),
-                Tables\Columns\TextColumn::make('maxOccupancy')
+                Tables\Columns\TextColumn::make('max_occupancy')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('basePrice')
+                Tables\Columns\TextColumn::make('base_price')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('discountPercentage')
+                Tables\Columns\TextColumn::make('discount_percentage')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('size')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('bedType')
+                Tables\Columns\TextColumn::make('bed_type')
                     ->searchable(),
-                ImageColumn::make('imageURL')
+                ImageColumn::make('image')
                     ->label('Image')
-                    ->getStateUsing(fn ($record) => asset(asset('images/'.$record->imageURL) )) 
+                    ->getStateUsing(fn ($record) => asset(asset('images/'.$record->image) )) 
                     ->width(50),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])
             ->filters([

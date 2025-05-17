@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Interface\AuthInterface;
 use App\Interface\FavouriteInterface;
 use App\Interface\HotelInterface;
+use App\Interface\LocationInterface;
 use App\Interface\PackageInterface;
 use App\Interface\RestaurantInterface;
 use App\Interface\TourInterface;
@@ -12,6 +13,7 @@ use App\Interface\TravelInterface;
 use App\Repositories\authRepository;
 use App\Repositories\FavouriteRepository;
 use App\Repositories\HotelRepository;
+use App\Repositories\LocationRepository;
 use App\Repositories\PackageRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\TourRepository;
@@ -52,6 +54,10 @@ class RepositryProvider extends ServiceProvider
         $this->app->bind(
             TravelInterface::class,
             TravelRepository::class,
+        );
+        $this->app->bind(
+            LocationInterface::class,
+            LocationRepository::class,
         );
     }
 

@@ -24,7 +24,7 @@ class TravelAgencySeeder extends Seeder
             'website' => 'https://globalexplorer.com',
             'phone' => '+1 555-123-4567',
             'email' => 'contact@globalexplorer.com',
-            'isActive' => true,
+            'is_active' => true,
             'admin_id' => 9,
         ]);
 
@@ -44,35 +44,35 @@ class TravelAgencySeeder extends Seeder
             'agency_id' => $agency->id,
             'name' => 'Amazing Europe Tour',
             'description' => '10-day guided tour across France, Italy, and Switzerland.',
-            'durationDays' => 10,
-            'basePrice' => 2500.00,
-            'discountPercentage' => 10,
-            'maxParticipants' => 30,
-            'averageRating' => 4.7,
-            'totalRatings' => 134,
-            'mainImageURL' => 'https://example.com/images/europe-tour.jpg',
-            'isActive' => true,
-            'isFeatured' => true,
+            'duration_days' => 10,
+            'base_price' => 2500.00,
+            'discount_percentage' => 10,
+            'max_participants' => 30,
+            'average_rating' => 4.7,
+            'total_ratings' => 134,
+            'main_image' => 'https://example.com/images/europe-tour.jpg',
+            'is_active' => true,
+            'is_featured' => true,
         ]);
         PackageDestination::create([
             'package_id' => $package->id,
             'location_id' => 1, 
-            'dayNumber' => 3,
+            'day_number' => 3,
             'description' => 'Visit Colosseum and Vatican.',
             'duration' => '2 days',
         ]);
         PackageInclusion::create([
             'package_id' => $package->id,
-            'inclusionType' => 1,
+            'inclusion_type' => 1,
             'description' => '4-star hotel with breakfast included',
-            'isHighlighted' => true,
+            'is_highlighted' => true,
         ]);
 
         PackageInclusion::create([
             'package_id' => $package->id,
-            'inclusionType' => 2,
+            'inclusion_type' => 2,
             'description' => 'Airport pickup and inter-city travel',
-            'isHighlighted' => false,
+            'is_highlighted' => false,
         ]);
     }
 }

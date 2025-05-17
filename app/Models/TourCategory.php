@@ -11,70 +11,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class TourCategory extends Model
 {
     use HasFactory;
-
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'TourCategories';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
-    public $timestamps = false;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'description',
-        'parentCategory_id',
-        'iconURL',
-        'displayOrder',
-        'isActive'
+        'parent_category_id',
+        'icon',
+        'display_order',
+        'is_active'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'isActive' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the parent category.
-     */
     public function parentCategory(): BelongsTo
     {
         return $this->belongsTo(TourCategory::class, 'parentCategory_id', 'id');
     }
 
-    /**
-     * Get the child categories.
-     */
     public function childCategories(): HasMany
     {
         return $this->hasMany(TourCategory::class, 'parentCategory_id', 'id');
     }
 
-    /**
-     * Get the tours for the category.
-     */
     public function tours()
     {
         return $this->belongsToMany(

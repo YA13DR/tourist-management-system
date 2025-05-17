@@ -26,8 +26,7 @@ class RestaurantBookingResource extends Resource
     {
         return Filament::auth()->check() 
          && Filament::auth()->user()->role === 'sub_admin' 
-         && Filament::auth()->user()->section === 'restaurant'
-         ;
+         && Filament::auth()->user()->section === 'restaurant';
     }
     public static function shouldRegisterNavigation(): bool
     {
@@ -47,35 +46,35 @@ class RestaurantBookingResource extends Resource
         return $form
         
             ->schema([
-                Forms\Components\Select::make('BookingID')
-                    ->relationship('booking','BookingID')
+                Forms\Components\Select::make('booking_id')
+                    ->relationship('booking','id')
                     ->required()
                     ->searchable()
                     ->preload()
                     // ->multiple()
                     ->native(false),
-                Forms\Components\Select::make('RestaurantID')
-                    ->relationship('restaurant','RestaurantName')
+                Forms\Components\Select::make('restaurant_id')
+                    ->relationship('restaurant','name')
                     ->required()
                     ->searchable()
                     ->preload()
                     // ->multiple()
                     ->native(false),
-                Forms\Components\Select::make('TableID')
-                    ->relationship('table','TableID')
+                Forms\Components\Select::make('table_id')
+                    ->relationship('table','number')
                     ->required()
                     ->searchable()
                     ->preload()
                     // ->multiple()
                     ->native(false),
-                Forms\Components\DatePicker::make('ReservationDate')
+                Forms\Components\DatePicker::make('reservation_date')
                     ->required(),
-                Forms\Components\TimePicker::make('ReservationTime')
+                Forms\Components\TimePicker::make('reservation_time')
                     ->required(),
-                Forms\Components\TextInput::make('NumberOfGuests')
+                Forms\Components\TextInput::make('number_of_guests')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('Duration')
+                Forms\Components\TextInput::make('duration')
                     ->required()
                     ->numeric()
                     ->default(120),
@@ -96,10 +95,10 @@ class RestaurantBookingResource extends Resource
                 Tables\Columns\TextColumn::make('table_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('reservationDate')
+                Tables\Columns\TextColumn::make('reservation_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('reservationTime'),
+                Tables\Columns\TextColumn::make('reservation_time'),
                 Tables\Columns\TextColumn::make('order')
                 ->label('Order Details')
                 ->formatStateUsing(function ($state) {
@@ -140,7 +139,10 @@ class RestaurantBookingResource extends Resource
             //
         ];
     }
-
+    public static function canCreate(): bool
+    {
+        return false; 
+    }
     public static function getPages(): array
     {
         return [

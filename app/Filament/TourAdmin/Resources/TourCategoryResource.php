@@ -48,19 +48,20 @@ class TourCategoryResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('parentCategory_id')
+                
+                Forms\Components\TextInput::make('parent_category_id')
                     ->numeric()
                     ->default(null),
-                Forms\Components\TextInput::make('iconURL')
+                Forms\Components\TextInput::make('icon')
                     ->maxLength(255)
                     ->default(null),
-                Forms\Components\TextInput::make('displayOrder')
+                Forms\Components\TextInput::make('display_order')
                     ->required()
                     ->numeric()
                     ->default(0),
-                Forms\Components\Toggle::make('isActive')
+                Forms\Components\Textarea::make('description')
+                    ->columnSpanFull(),
+                Forms\Components\Toggle::make('is_active')
                     ->required(),
             ]);
     }
@@ -71,18 +72,18 @@ class TourCategoryResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('parentCategoryID')
+                Tables\Columns\TextColumn::make('parent_category_id')
                     ->numeric()
                     ->sortable(),
-                ImageColumn::make('iconURL')
+                ImageColumn::make('icon')
                     ->label('Icon')
                     ->circular() 
                     ->size(40)   
                     ->url(fn ($record) => $record->iconURL),
-                Tables\Columns\TextColumn::make('displayOrder')
+                Tables\Columns\TextColumn::make('display_order')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])
             ->filters([

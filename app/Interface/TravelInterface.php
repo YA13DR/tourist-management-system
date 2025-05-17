@@ -3,7 +3,7 @@
 namespace App\Interface;
 
 use App\Http\Requests\TravelBookingRequest;
-use Request;
+use Illuminate\Http\Request;
 
 interface TravelInterface
 {
@@ -16,4 +16,5 @@ interface TravelInterface
 
     public function bookFlight($id, TravelBookingRequest $request);
     public function bookFlightByPoint($id, TravelBookingRequest $request);
+    public function updateFlightBooking($id, Request $request);
 }

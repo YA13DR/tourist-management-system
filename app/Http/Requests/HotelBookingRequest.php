@@ -22,11 +22,11 @@ class HotelBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'roomType_id'=>'required',
-            'checkInDate'=>'after_or_equal:today',
-            'numberOfRooms'=>'required',
-            'numberOfGuests'=>'required',
-            'numberOfDays' => 'required|integer|min:1'
+            'room_type_id'=>'required',
+            'check_in_date'=>'after_or_equal:today',
+            'number_of_rooms'=>'required',
+            'number_of_guests'=>'required',
+            'number_of_days' => 'required|integer|min:1'
         ];
     }
 }

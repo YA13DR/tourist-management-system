@@ -8,7 +8,8 @@
 
             <ul class="space-y-2 text-gray-900 dark:text-white">
                 <li><strong class="text-gray-800 dark:text-gray-200">Name:</strong> {{ $restaurant->name }}</li>
-                <li><strong class="text-gray-800 dark:text-gray-200">Address:</strong> {{ $restaurant->city }}</li>
+                <li><strong class="text-gray-800 dark:text-gray-200">Address:</strong> {{ $restaurant->location->city->name }}</li>
+                <li><strong class="text-gray-800 dark:text-gray-200">Discount:</strong> {{ $restaurant->discount?? "no discount" }}</li>
                 <li><strong class="text-gray-800 dark:text-gray-200">Opening Time:</strong> {{ $restaurant->openingTime }}</li>
                 <li><strong class="text-gray-800 dark:text-gray-200">Closing Time:</strong> {{ $restaurant->closingTime }}</li>
             </ul>

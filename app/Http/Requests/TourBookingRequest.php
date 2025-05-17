@@ -22,8 +22,8 @@ class TourBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'numberOfAdults' => 'required',
-            'numberOfChildren' => 'required',
+            'number_of_adults' => 'required',
+            'number_of_children' => 'required',
         ];
     }
 }

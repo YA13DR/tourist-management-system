@@ -35,16 +35,16 @@ class MenuCategoryResource extends Resource
                 ->default(fn () => \App\Models\Restaurant::where('admin_id', auth()->id())->value('id')),
                 Forms\Components\TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('displayOrder')
+                    ->maxLength(255),               
+                Forms\Components\TextInput::make('display_order')
                     ->required()
                     ->numeric()
                     ->default(0),
-                Forms\Components\Toggle::make('isActive')
+                Forms\Components\Toggle::make('is_active')
                     ->required(),
-            ]);
+                Forms\Components\Textarea::make('description')
+                    ->columnSpanFull(),
+            ])->columns(3);
     }
 
     public static function table(Table $table): Table
@@ -53,10 +53,12 @@ class MenuCategoryResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('displayOrder')
+                Tables\Columns\TextColumn::make('description')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('display_order')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])
             ->filters([

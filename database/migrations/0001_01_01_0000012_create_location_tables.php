@@ -12,20 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         // Countries table
-        Schema::create('Countries', function (Blueprint $table) {
+        Schema::create('countries', function (Blueprint $table) {
             $table->id();
             $table->string('name')->notNull();
             $table->string('code')->notNull();
             $table->string('continent_code')->nullable();
             $table->string('phone_code')->nullable();
-            $table->boolean('isActive')->default(true);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
 
         // Cities table
-        Schema::create('Cities', function (Blueprint $table) {
+        Schema::create('cities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('country_id')->constrained('Countries', 'id');
+            $table->foreignId('country_id')->constrained('countries', 'id');
             $table->string('name')->notNull();
             $table->boolean('isPopular')->default(false);
             $table->text('description')->nullable();
@@ -33,15 +33,14 @@ return new class extends Migration
         });
 
         // Locations table
-        Schema::create('Locations', function (Blueprint $table) {
-            $table->id('id');
+        Schema::create('locations', function (Blueprint $table) {
+            $table->id();
             $table->string('name');
-            $table->decimal('Latitude', 10, 7)->nullable();
-            $table->decimal('Longitude', 10, 7)->nullable();
-            $table->string('city')->nullable();
-            $table->string('country')->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->foreignId('city_id')->nullable()->constrained('cities')->nullOnDelete();
             $table->string('region')->nullable();
-            $table->boolean('IsPopular')->default(false);
+            $table->boolean('is_popular')->default(false);
             $table->timestamps();
         });
     }
@@ -51,8 +50,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('Locations');
-        Schema::dropIfExists('Cities');
-        Schema::dropIfExists('Countries');
+        Schema::dropIfExists('locations');
+        Schema::dropIfExists('cities');
+        Schema::dropIfExists('countries');
     }
 };

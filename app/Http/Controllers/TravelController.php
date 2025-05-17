@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TravelBookingRequest;
 use App\Interface\TravelInterface;
-use Request;
+use Illuminate\Http\Request;
 
 class TravelController extends Controller
 {
@@ -44,5 +44,9 @@ class TravelController extends Controller
     public function bookFlightByPoint($id,TravelBookingRequest $request)
     {
         return $this->travelRepository->bookFlightByPoint($id,$request);
+    }
+    public function updateFlightBooking($id,Request $request)
+    {
+        return $this->travelRepository->updateFlightBooking($id,$request);
     }
 }

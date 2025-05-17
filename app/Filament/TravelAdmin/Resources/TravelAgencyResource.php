@@ -47,52 +47,82 @@ class TravelAgencyResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->columnSpanFull(),
-                Forms\Components\Select::make('location_id')
-                    ->label('Location')
-                    ->relationship('location', 'name') 
+        ->schema([
+            Forms\Components\Section::make('Basic Information')
+                ->schema([
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(255),
                     
-                    ->required(),
-                Forms\Components\TextInput::make('averageRating')
-                    ->required()
-                    ->numeric()
-                    ->default(0.00),
-                Forms\Components\TextInput::make('totalRatings')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\TextInput::make('logoURL')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('website')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('phone')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('email')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\Toggle::make('isActive')
-                    ->required(),
+                    Forms\Components\Section::make('Location')
+                        ->schema([
+                            Forms\Components\TextInput::make('latitude')
+                                ->label('Latitude')
+                                ->required()
+                                ->readonly(),
+                            Forms\Components\TextInput::make('longitude')
+                                ->label('Longitude')
+                                ->required()
+                                ->readonly(),
+                                Forms\Components\TextInput::make('city')
+                                ->label('City')
+                                ->required(),
+                            
+                            Forms\Components\TextInput::make('country')
+                                ->label('Country')
+                                ->required(),
+                            
+                            Forms\Components\Placeholder::make('Map')
+                                ->content(function () {
+                                    return view('map');
+                                })->columnSpanFull(),
+                        ])->columns(2),
                     Forms\Components\Select::make('admin_id')
-                    ->label('Manager')
-                    ->options(function () {
-                        $section = auth()->user()?->section;
-                
-                        return Admin::where('role', 'sub_admin')
-                            ->where('section', $section)
-                            ->get()
-                            ->pluck('name', 'id')
-                            ->toArray();
-                    })
-                    ->required()
-            ]);
+                        ->label('Manager')
+                        ->options(function () {
+                            $section = auth()->user()?->section;
+                            return Admin::where('role', 'sub_admin')
+                                ->where('section', $section)
+                                ->pluck('name', 'id')
+                                ->toArray();
+                        })->required(),
+                        Forms\Components\Textarea::make('description')
+                        ->columnSpanFull(),
+                ])
+                ->columns(3),
+        
+            Forms\Components\Section::make('Contact & Media')
+                ->schema([
+                    Forms\Components\TextInput::make('logo')
+                        ->label('Logo URL')
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('website')
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('phone')
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('email')
+                        ->maxLength(255),
+                ])
+                ->columns(2),
+        
+            Forms\Components\Section::make('Ratings & Status')
+                ->schema([
+                    Forms\Components\TextInput::make('average_rating')
+                        ->label('Average Rating')
+                        ->required()
+                        ->numeric()
+                        ->default(0.00),
+                    Forms\Components\TextInput::make('total_ratings')
+                        ->label('Total Ratings')
+                        ->required()
+                        ->numeric()
+                        ->default(0),
+                    Forms\Components\Toggle::make('is_active')
+                        ->label('Active')
+                        ->required(),
+                ])
+                ->columns(3),
+                ]);
     }
 
     public static function table(Table $table): Table
@@ -104,13 +134,13 @@ class TravelAgencyResource extends Resource
                 Tables\Columns\TextColumn::make('location.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('averageRating')
+                Tables\Columns\TextColumn::make('average_rating')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('totalRatings')
+                Tables\Columns\TextColumn::make('total_ratings')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('logoURL')
+                Tables\Columns\TextColumn::make('logo')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('website')
                     ->searchable(),
@@ -118,7 +148,7 @@ class TravelAgencyResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('admin_id')
                     ->numeric()

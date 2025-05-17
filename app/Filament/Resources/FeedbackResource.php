@@ -17,7 +17,9 @@ class FeedbackResource extends Resource
 {
     protected static ?string $model = Feedback::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+    
+    protected static ?string $navigationGroup = 'Application Managment';
 
     public static function form(Form $form): Form
     {
@@ -31,7 +33,6 @@ class FeedbackResource extends Resource
     {
         return $table
             ->columns([
-                    Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
                     Tables\Columns\TextColumn::make('user.first_name')->label('User')->default('Guest'),
                     Tables\Columns\TextColumn::make('feedback_text')->label('Feedback')->wrap(),
                     Tables\Columns\TextColumn::make('feedback_type')->label('Type')->formatStateUsing(fn ($state) => match ($state) {
@@ -71,7 +72,10 @@ class FeedbackResource extends Resource
             //
         ];
     }
-
+    public static function canCreate(): bool
+    {
+        return false; 
+    }
     public static function getPages(): array
     {
         return [

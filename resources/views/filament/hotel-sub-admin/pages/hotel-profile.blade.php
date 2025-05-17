@@ -8,6 +8,8 @@
 
             <ul class="space-y-2 text-gray-900 dark:text-white">
                 <li><strong class="text-gray-800 dark:text-gray-200">Name:</strong> {{ $hotel->name }}</li>
+                <li><strong class="text-gray-800 dark:text-gray-200">Address:</strong> {{ $hotel->location->city->name }}</li>
+                <li><strong class="text-gray-800 dark:text-gray-200">Discount:</strong> {{ $hotel->discount??"No Discount" }}</li>
                 <li><strong class="text-gray-800 dark:text-gray-200">Opening Time:</strong> {{ $hotel->checkInTime }}</li>
                 <li><strong class="text-gray-800 dark:text-gray-200">Closing Time:</strong> {{ $hotel->checkOutTime }}</li>
             </ul>

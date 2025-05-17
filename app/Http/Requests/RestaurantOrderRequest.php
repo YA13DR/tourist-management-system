@@ -23,7 +23,7 @@ class RestaurantOrderRequest extends FormRequest
     {
         return [
             'orderItems' => 'required|array|min:1',
-            'orderItems.*.item_id' => 'required|exists:MenuItems,id',
+            'orderItems.*.item_id' => 'required|exists:menu_items,id',
             'orderItems.*.quantity' => 'required|integer|min:1',
         ];
     }

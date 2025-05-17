@@ -16,16 +16,16 @@ trait HandlesUserPoints
             return; 
         }
 
-        $pointsToAdd = $rule->points * $quantity;
+        $points_to_add = $rule->points * $quantity;
 
-        $userRank = $user->rank ?? new UserRank(['user_id' => $user->id]);
+        $user_rank = $user->rank ?? new UserRank(['user_id' => $user->id]);
 
-        $userRank->points_earned += $pointsToAdd;
+        $user_rank->points_earned += $points_to_add;
 
-        $userRank->rank_id = Rank::where('min_points', '<=', $userRank->points_earned)
+        $user_rank->rank_id = Rank::where('min_points', '<=', $user_rank->points_earned)
             ->orderByDesc('min_points')
             ->first()?->id;
 
-        $userRank->save();
+        $user_rank->save();
     }
 }

@@ -17,7 +17,9 @@ class DiscountPointResource extends Resource
 {
     protected static ?string $model = DiscountPoint::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-gift';
+    
+    protected static ?string $navigationGroup = 'Point Managment';
 
     public static function form(Form $form): Form
     {
@@ -47,6 +49,9 @@ class DiscountPointResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('action')
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('required_points')
                     ->numeric()
                     ->sortable(),

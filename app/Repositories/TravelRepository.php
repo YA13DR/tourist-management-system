@@ -21,7 +21,7 @@ use App\Traits\HandlesUserPoints;
 use Auth;
 use Carbon\Carbon;
 use DB;
-use Request;
+use Illuminate\Http\Request;
 
 class TravelRepository implements TravelInterface
 {
@@ -43,7 +43,7 @@ class TravelRepository implements TravelInterface
             ])->exists();
             }
             $now = now();
-            $promotion = Promotion::where('isActive', true)
+            $promotion = Promotion::where('is_active', true)
                 ->where('start_date', '<=', $now)
                 ->where('end_date', '>=', $now)
                 ->where('applicable_type', 1) 
@@ -87,7 +87,7 @@ class TravelRepository implements TravelInterface
             ])->exists();
         }
         $now = now();
-        $promotion = Promotion::where('isActive', true)
+        $promotion = Promotion::where('is_active', true)
             ->where('start_date', '<=', $now)
             ->where('end_date', '>=', $now)
             ->where('applicable_type', 1) 
@@ -164,45 +164,45 @@ class TravelRepository implements TravelInterface
             return $this->error('Cannot book a flight that has already departed.', 400);
         }
 
-        $alreadyBookedSeats = TravelBooking::where('flight_id', $flight->id)
+        $already_booked_seats = TravelBooking::where('flight_id', $flight->id)
             ->where('status', '!=', 'cancelled')
             ->sum('number_of_people');
 
-        $remainingSeats = $flight->available_seats - $alreadyBookedSeats;
+        $remaining_seats = $flight->available_seats - $already_booked_seats;
 
-        if ($request->number_of_people > $remainingSeats) {
-            return $this->error('Not enough available seats. Only ' . $remainingSeats . ' remaining.', 400);
+        if ($request->number_of_people > $remaining_seats) {
+            return $this->error('Not enough available seats. Only ' . $remaining_seats . ' remaining.', 400);
         }
 
-        $bookingReference = 'FB-' . strtoupper(uniqid());
-        $totalCost = $flight->price * $request->number_of_people;
+        $booking_reference = 'FB-' . strtoupper(uniqid());
+        $total_cost = $flight->price * $request->number_of_people;
 
         $booking = Booking::create([
-            'bookingReference' => $bookingReference,
+            'booking_reference' => $booking_reference,
             'user_id' => auth('sanctum')->id(),
             'bookingType' => 2,
-            'totalPrice' => $totalCost,
+            'totalPrice' => $total_cost,
             'paymentStatus' => 1,
         ]);
 
-        $travelBooking = TravelBooking::create([
+        $travel_booking = TravelBooking::create([
             'user_id' => auth('sanctum')->id(),
             'booking_id' => $booking->id,
             'flight_id' => $flight->id,
             'number_of_people' => $request->number_of_people,
             'booking_date' => now()->toDateString(),
-            'total_price' => $totalCost,
+            'total_price' => $total_cost,
             'status' => 'confirmed',
         ]);
 
         $this->addPointsFromAction(auth('sanctum')->user(), 'book_flight', $request->number_of_people);
 
         return $this->success('Flight booked successfully', [
-            'bookingReference' => $booking->bookingReference,
-            'reservation_id' => $travelBooking->id,
+            'booking_reference' => $booking->booking_reference,
+            'reservation_id' => $travel_booking->id,
             'flight_id' => $flight->id,
             'departure_time' => $flight->departure_time,
-            'total_cost' => $totalCost,
+            'total_cost' => $total_cost,
         ]);
     }
 
@@ -217,35 +217,35 @@ class TravelRepository implements TravelInterface
             return $this->error('Cannot book a flight that has already departed.', 400);
         }
 
-        $alreadyBookedSeats = TravelBooking::where('flight_id', $flight->id)
+        $already_booked_seats = TravelBooking::where('flight_id', $flight->id)
             ->where('status', '!=', 'cancelled')
             ->sum('number_of_people');
 
-        $remainingSeats = $flight->available_seats - $alreadyBookedSeats;
+        $remaining_seats = $flight->available_seats - $already_booked_seats;
 
-        if ($request->number_of_people > $remainingSeats) {
-            return $this->error('Not enough available seats. Only ' . $remainingSeats . ' remaining.', 400);
+        if ($request->number_of_people > $remaining_seats) {
+            return $this->error('Not enough available seats. Only ' . $remaining_seats . ' remaining.', 400);
         }
 
         $user = auth('sanctum')->user();
-        $userRank = $user->rank ?? new UserRank(['user_id' => $user->id]);
-        $userPoints = $userRank->points_earned ?? 0;
+        $user_rank = $user->rank ?? new UserRank(['user_id' => $user->id]);
+        $user_points = $userRank->points_earned ?? 0;
 
         $rule = DiscountPoint::where('action', 'book_flight')->first();
 
-        if (!$rule || $userPoints < $rule->required_points) {
+        if (!$rule || $user_points < $rule->required_points) {
             return $this->error('You do not have enough reward points to book this flight. Minimum required: ' . ($rule->required_points ?? 'N/A'), 403);
         }
 
         $discount = ($flight->price * $request->number_of_people) * ($rule->discount_percentage / 100);
-        $totalCost = ($flight->price * $request->number_of_people) - $discount;
+        $total_cost = ($flight->price * $request->number_of_people) - $discount;
 
         $booking = Booking::create([
-            'bookingReference' => 'FB-' . strtoupper(uniqid()),
+            'booking_reference' => 'FB-' . strtoupper(uniqid()),
             'user_id' => $user->id,
-            'bookingType' => 2,
-            'totalPrice' => $totalCost,
-            'paymentStatus' => 1,
+            'booking_type' => 2,
+            'total_price' => $total_cost,
+            'payment_status' => 1,
         ]);
 
         $travelBooking = TravelBooking::create([
@@ -254,22 +254,21 @@ class TravelRepository implements TravelInterface
             'flight_id' => $flight->id,
             'number_of_people' => $request->number_of_people,
             'booking_date' => now()->toDateString(),
-            'total_price' => $totalCost,
-            'discountAmount' => $discount,
-            'paymentStatus' => 1,
-            'bookingDate' => now(), 
+            'total_price' => $total_cost,
+            'discount_amount' => $discount,
+            'payment_status' => 1,
             'status' => 'confirmed',
         ]);
 
-        $userRank->points_earned -= $rule->required_points;
-        $userRank->save();
+        $user_rank->points_earned -= $rule->required_points;
+        $user_rank->save();
 
         return $this->success('Flight booked successfully with discount applied.', [
-            'bookingReference' => $booking->bookingReference,
+            'booking_reference' => $booking->booking_reference,
             'reservation_id' => $travelBooking->id,
             'flight_id' => $flight->id,
             'departure_time' => $flight->departure_time,
-            'total_cost' => $totalCost,
+            'total_cost' => $total_cost,
             'discount_applied' => true,
             'discount_amount' => $discount,
         ]);
@@ -286,25 +285,25 @@ class TravelRepository implements TravelInterface
             return $this->error('Cannot book a flight that has already departed.', 400);
         }
 
-        $alreadyBookedSeats = TravelBooking::where('flight_id', $flight->id)
+        $already_booked_seats = TravelBooking::where('flight_id', $flight->id)
             ->where('status', '!=', 'cancelled')
             ->sum('number_of_people');
 
-        $remainingSeats = $flight->available_seats - $alreadyBookedSeats;
+        $remaining_seats = $flight->available_seats - $already_booked_seats;
 
-        if ($request->number_of_people > $remainingSeats) {
-            return $this->error('Not enough available seats. Only ' . $remainingSeats . ' remaining.', 400);
+        if ($request->number_of_people > $remaining_seats) {
+            return $this->error('Not enough available seats. Only ' . $remaining_seats . ' remaining.', 400);
         }
 
-        $bookingReference = 'FB-' . strtoupper(uniqid());
-        $totalCost = $flight->price * $request->number_of_people;
+        $booking_reference = 'FB-' . strtoupper(uniqid());
+        $total_cost = $flight->price * $request->number_of_people;
 
         $promotion = null;
-        $promotionCode = $request->promotion_code;
+        $promotion_code = $request->promotion_code;
 
-        if ($promotionCode) {
-            $promotion = Promotion::where('promotion_code', $promotionCode)
-                ->where('isActive', true)
+        if ($promotion_code) {
+            $promotion = Promotion::where('promotion_code', $promotion_code)
+                ->where('is_active', true)
                 ->where('start_date', '<=', now())
                 ->where('end_date', '>=', now())
                 ->where(function ($q) {
@@ -313,11 +312,11 @@ class TravelRepository implements TravelInterface
                 })
                 ->first();
 
-            if (!$promotion || !$promotion->isActive) {
+            if (!$promotion || !$promotion->is_active) {
                 return $this->error('Invalid or expired promotion code', 400);
             }
 
-            if ($totalCost < $promotion->minimum_purchase) {
+            if ($total_cost < $promotion->minimum_purchase) {
                 return $this->error("Total must be at least {$promotion->minimum_purchase} to use this code.", 400);
             }
 
@@ -326,36 +325,36 @@ class TravelRepository implements TravelInterface
             }
         }
 
-        $discountAmount = 0;
+        $discount_amount = 0;
         if ($promotion) {
-            $discountAmount = $promotion->discount_type == 1
-                ? ($totalCost * $promotion->discount_value / 100)
+            $discount_amount = $promotion->discount_type == 1
+                ? ($total_cost * $promotion->discount_value / 100)
                 : $promotion->discount_value; 
 
-            $discountAmount = min($discountAmount, $totalCost);
+            $discount_amount = min($discount_amount, $total_cost);
         }
 
-        $totalCostAfterDiscount = $totalCost - $discountAmount;
+        $totalCost_afterDiscount = $total_cost - $discount_amount;
 
         $booking = Booking::create([
-            'bookingReference' => $bookingReference,
+            'booking_reference' => $booking_reference,
             'user_id' => auth('sanctum')->id(),
-            'bookingType' => 2,
-            'totalPrice' => $totalCostAfterDiscount,
-            'paymentStatus' => 1,
+            'booking_type' => 2,
+            'total_price' => $totalCost_afterDiscount,
+            'payment_status' => 1,
         ]);
 
         if (!$booking) {
             return $this->error('Failed to create booking', 500);
         }
 
-        $travelBooking = TravelBooking::create([
+        $travel_booking = TravelBooking::create([
             'user_id' => auth('sanctum')->id(),
             'booking_id' => $booking->id,
             'flight_id' => $flight->id,
             'number_of_people' => $request->number_of_people,
             'booking_date' => now()->toDateString(),
-            'total_price' => $totalCostAfterDiscount,
+            'total_price' => $totalCost_afterDiscount,
             'status' => 'confirmed',
         ]);
 
@@ -366,12 +365,62 @@ class TravelRepository implements TravelInterface
         $this->addPointsFromAction(auth('sanctum')->user(), 'book_flight', $request->number_of_people);
 
         return $this->success('Flight booked successfully', [
-            'bookingReference' => $booking->bookingReference,
-            'reservation_id' => $travelBooking->id,
+            'booking_eference' => $booking->booking_reference,
+            'reservation_id' => $travel_booking->id,
             'flight_id' => $flight->id,
             'departure_time' => $flight->departure_time,
-            'total_cost' => $totalCostAfterDiscount,
-            'discountAmount' => $discountAmount,
+            'total_cost' => $totalCost_afterDiscount,
+            'discount_amount' => $discount_amount,
+        ]);
+    }
+    public function updateFlightBooking($id, Request $request)
+    {
+        $new_flight_id = $request->flight_id;
+
+        $booking = TravelBooking::with('flight')->find($id);
+
+        if (!$booking) {
+            return $this->error('Booking not found', 404);
+        }
+
+        if ($booking->user_id !== auth('sanctum')->id()) {
+            return $this->error('Unauthorized', 403);
+        }
+
+        $current_flight = $booking->flight;
+        if (!$current_flight) {
+            return $this->error('Original flight not found', 404);
+        }
+
+        if (now()->diffInDays($current_flight->departure_time, false) < 2) {
+            return $this->error('You can only modify the flight up to 2 days before departure.', 400);
+        }
+
+        $new_flight = TravelFlight::find($new_flight_id);
+        if (!$new_flight) {
+            return $this->error('New flight not found', 404);
+        }
+
+        if ($new_flight->departure_time <= now()) {
+            return $this->error('Cannot choose a flight that has already departed.', 400);
+        }
+
+        $already_booked_seats = TravelBooking::where('flight_id', $new_flight->id)
+            ->where('status', '!=', 'cancelled')
+            ->sum('number_of_people');
+
+        $remaining_seats = $new_flight->available_seats - $already_booked_seats;
+
+        if ($booking->number_of_people > $remaining_seats) {
+            return $this->error('Not enough seats in the new flight. Only ' . $remaining_seats . ' available.', 400);
+        }
+
+        $booking->flight_id = $new_flight->id;
+        $booking->save();
+
+        return $this->success('Flight updated successfully', [
+            'new_flight_id' => $new_flight->id,
+            'departure_time' => $new_flight->departure_time,
         ]);
     }
 }

@@ -45,27 +45,7 @@ class HotelBookingResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('BookingID')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('HotelID')
-                    ->tel()
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('RoomTypeID')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\DatePicker::make('CheckInDate')
-                    ->required(),
-                Forms\Components\DatePicker::make('CheckOutDate')
-                    ->required(),
-                Forms\Components\TextInput::make('NumberOfRooms')
-                    ->required()
-                    ->numeric()
-                    ->default(1),
-                Forms\Components\TextInput::make('NumberOfGuests')
-                    ->required()
-                    ->numeric(),
+               
             ]);
     }
 
@@ -79,22 +59,22 @@ class HotelBookingResource extends Resource
                 Tables\Columns\TextColumn::make('hotel.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('hotelRoom')
+                Tables\Columns\TextColumn::make('hotel_room')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('roomType.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('checkInDate')
+                Tables\Columns\TextColumn::make('checkIn_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('checkOutDate')
+                Tables\Columns\TextColumn::make('checkOut_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('numberOfRooms')
+                Tables\Columns\TextColumn::make('number_of_rooms')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('numberOfGuests')
+                Tables\Columns\TextColumn::make('number_of_guests')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('cost')
@@ -121,7 +101,10 @@ class HotelBookingResource extends Resource
             //
         ];
     }
-
+    public static function canCreate(): bool
+    {
+        return false; 
+    }
     public static function getPages(): array
     {
         return [

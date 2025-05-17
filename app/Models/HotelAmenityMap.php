@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class HotelAmenityMap extends Model
 {
-    protected $table = 'HotelAmenityMapping';
     protected $fillable=[
         'hotel_id',
         'amenity_id',

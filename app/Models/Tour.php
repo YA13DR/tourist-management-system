@@ -12,62 +12,35 @@ class Tour extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'Tours';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'description',
-        'shortDescription',
+        'short_description',
         'location_id',
-        'durationHours',
-        'durationDays',
-        'basePrice',
-        'discountPercentage',
-        'maxCapacity',
-        'minParticipants',
-        'difficultyLevel',
-        'averageRating',
-        'totalRatings',
-        'mainImageURL',
-        'isActive',
-        'isFeatured',
+        'duration_hours',
+        'duration_days',
+        'base_price',
+        'discount_percentage',
+        'max_capacity',
+        'min_participants',
+        'difficulty_level',
+        'average_rating',
+        'total_ratings',
+        'main_image',
+        'is_active',
+        'is_featured',
         'admin_id'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'durationHours' => 'decimal:2',
-        'basePrice' => 'decimal:2',
-        'discountPercentage' => 'decimal:2',
-        'averageRating' => 'decimal:2',
-        'isActive' => 'boolean',
-        'isFeatured' => 'boolean',
+        'duration_hours' => 'decimal:2',
+        'base_price' => 'decimal:2',
+        'discount_percentage' => 'decimal:2',
+        'average_rating' => 'decimal:2',
+        'is_active' => 'boolean',
+        'is_featured' => 'boolean',
     ];
 
-    /**
-     * Get the location that owns the tour.
-     */
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class, 'location_id', 'id');
@@ -77,54 +50,36 @@ class Tour extends Model
         return $this->belongsTo(TravelPackage::class, 'tour_id', 'id');
     }
 
-    /**
-     * Get the user that created the tour.
-     */
     public function admin(): BelongsTo
     {
         return $this->belongsTo(Admin::class, 'admin_id', 'id');
     }
 
-    /**
-     * Get the images for the tour.
-     */
     public function images(): HasMany
     {
         return $this->hasMany(TourImage::class, 'tour_id', 'id');
     }
 
-    /**
-     * Get the schedules for the tour.
-     */
     public function schedules(): HasMany
     {
-        return $this->hasMany(TourSchedule::class, 'tour_id', 'id')->where('isActive', true);
+        return $this->hasMany(TourSchedule::class, 'tour_id', 'id')->where('is_active', true);
     }
 
-    /**
-     * Get the translations for the tour.
-     */
     public function translations(): HasMany
     {
         return $this->hasMany(TourTranslation::class, 'tour_id', 'id');
     }
 
-    /**
-     * Get the categories for the tour.
-     */
     public function categories()
 {
     return $this->belongsToMany(
-        TourCategory::class, // الموديل المرتبط
-        'TourCategoryMapping', // اسم جدول الربط
-        'tour_id', // المفتاح الأجنبي لهذا الموديل في جدول الربط
-        'category_id' // المفتاح الأجنبي للطرف الآخر في جدول الربط
+        TourCategory::class, 
+        'tour_category_mapping', 
+        'tour_id', 
+        'category_id'
     );
 }
 
-    /**
-     * Get the bookings for the tour.
-     */
     public function bookings(): HasMany
     {
         return $this->hasMany(TourBooking::class, 'tour_id', 'id');

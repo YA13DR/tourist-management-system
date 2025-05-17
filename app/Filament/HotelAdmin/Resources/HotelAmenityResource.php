@@ -42,10 +42,10 @@ class HotelAmenityResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('iconURL')
+                Forms\Components\TextInput::make('icon')
                     ->maxLength(255)
                     ->default(null),
-                Forms\Components\Toggle::make('isActive')
+                Forms\Components\Toggle::make('is_active')
                     ->required(),
             ]);
     }
@@ -56,9 +56,9 @@ class HotelAmenityResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('iconURL')
+                Tables\Columns\TextColumn::make('icon')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])
             ->filters([

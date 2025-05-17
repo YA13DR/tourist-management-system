@@ -5,6 +5,8 @@ namespace App\Filament\RestaurantAdmin\Resources;
 use App\Filament\RestaurantAdmin\Resources\RestaurantResource\Pages;
 use App\Filament\RestaurantAdmin\Resources\RestaurantResource\RelationManagers;
 use App\Models\Admin;
+use App\Models\City;
+use App\Models\Country;
 use App\Models\Restaurant;
 use Filament\Facades\Filament;
 use Filament\Forms;
@@ -15,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
+use Log;
 
 class RestaurantResource extends Resource
 {
@@ -45,133 +48,113 @@ class RestaurantResource extends Resource
             && Filament::auth()->user()->section === 'restaurant'
          ));
     }
-    public static function mutateFormDataBeforeUpdate(array $data): array
-    {
-        $location = \App\Models\Location::create([
-            'latitude' => $data['latitude'],
-            'longitude' => $data['longitude'],
-            'city' => $data['city'],
-            'region' => $data['region'],
-            'country' => $data['country'],
-        ]);
 
-        $data['location_id'] = $location->LocationID;
-        unset($data['latitude'], $data['longitude'], $data['city'], $data['region'], $data['country']);
 
-        return $data;
-    }
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('INFO')
-                    ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\Textarea::make('description')
-                            ->columnSpanFull(),
-                        FileUpload::make('mainImageURL')
-                        ->label('restaurant Image')
-                        ->image()
-                        ->directory('restaurant_images') 
-                        ->visibility('public' && 'storage'),
-                        // ->required(),
-                ])->columns(2),
-                Forms\Components\Section::make('Location')
-                // ->relationship('location') 
                 ->schema([
-                        
-                        Forms\Components\TextInput::make('latitude')
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->unique(ignoreRecord: true)
+                        ->maxLength(255),
+                    Forms\Components\Textarea::make('description')->columnSpanFull(),
+                    Forms\Components\TextInput::make('discount')->numeric()->default(null),
+                    Forms\Components\TextInput::make('cost')->numeric()->default(null),
+                    Forms\Components\TextInput::make('max_tables')->numeric()->default(null),
+                    FileUpload::make('main_image')
+                        ->label('Restaurant Image')
+                        ->image()
+                        ->directory('restaurant_images')
+                        ->visibility('public'),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Location')
+                ->schema([
+                    Forms\Components\TextInput::make('latitude')
                         ->label('Latitude')
                         ->required()
                         ->readonly(),
-                    
                     Forms\Components\TextInput::make('longitude')
                         ->label('Longitude')
                         ->required()
                         ->readonly(),
                         Forms\Components\TextInput::make('city')
-                        ->label('City'),
+                        ->label('City')
+                        ->required(),
+                    
                     Forms\Components\TextInput::make('country')
-                        ->label('Country'),
-                    Forms\Components\TextInput::make('region')
-                        ->label('Region'),
+                        ->label('Country')
+                        ->required(),
+                    
                     Forms\Components\Placeholder::make('Map')
                         ->content(function () {
                             return view('map');
                         })->columnSpanFull(),
                 ])->columns(2),
-                Forms\Components\Section::make('Time')
-                ->schema([
-                    Forms\Components\TimePicker::make('openingTime')
-                        ->native(false)
-                        ->required(),
-                    Forms\Components\TimePicker::make('closingTime')
-                        ->native(false)
-                        ->required(),
-                ])->columns(2),
-                
 
-                Forms\Components\Section::make('Rating')
-                    ->schema([
-                    Forms\Components\TextInput::make('averageRating')
+            Forms\Components\Section::make('Time')
+                ->schema([
+                    Forms\Components\TimePicker::make('opening_time')
+                        ->native(false),
+                    Forms\Components\TimePicker::make('closing_time')
+                        ->native(false),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Rating')
+                ->schema([
+                    Forms\Components\TextInput::make('average_rating')
                         ->required()
                         ->numeric()
                         ->default(0.00),
-                    Forms\Components\TextInput::make('totalRatings')
+                    Forms\Components\TextInput::make('total_ratings')
                         ->required()
                         ->numeric()
                         ->default(0),
                 ])->columns(2),
 
-                Forms\Components\Section::make('Rating')
-                    ->schema([  
-                    Forms\Components\TextInput::make('priceRange')
-                    ->numeric()
-                    ->default(null),
+            Forms\Components\Section::make('Price Range')
+                ->schema([
+                    Forms\Components\Select::make('price_range')
+                        ->options([
+                            'inexpensive' => 'Inexpensive',
+                            'moderate' => 'Moderate',
+                            'expensive' => 'Expensive',
+                            'very_expensive' => 'Very Expensive',
+                        ])
+                        ->label('Price Range'),
                 ])->columns(1),
-                
-                
-                Forms\Components\Section::make('Comunication')
-                    ->schema([
-                    Forms\Components\TextInput::make('website')
-                        ->maxLength(255)
-                        ->default(null),
-                    Forms\Components\TextInput::make('phone')
-                        ->maxLength(255)
-                        ->default(null),
-                    Forms\Components\TextInput::make('email')
-                        ->maxLength(255)
-                        ->default(null),
-                ])->columns(3),
-                Forms\Components\Section::make('Others')
+
+            Forms\Components\Section::make('Communication')
                 ->schema([
-                    Forms\Components\Toggle::make('isActive')
-                        ->required(),
-                    Forms\Components\Toggle::make('isFeatured')
-                        ->required(),
+                    Forms\Components\TextInput::make('website')->maxLength(255)->default(null),
+                    Forms\Components\TextInput::make('phone')->maxLength(255)->default(null),
+                    Forms\Components\TextInput::make('email')->maxLength(255)->default(null),
                 ])->columns(3),
-                
-                Forms\Components\Section::make('Users')
+
+            Forms\Components\Section::make('Others')
                 ->schema([
-                Forms\Components\TextInput::make('cuisine')
-                    ->maxLength(255)
-                    ->default(null),
+                    Forms\Components\Toggle::make('is_active')->required(),
+                    Forms\Components\Toggle::make('is_featured')->required(),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Users')
+                ->schema([
+                    Forms\Components\TextInput::make('cuisine')->maxLength(255)->default(null),
                     Forms\Components\Select::make('admin_id')
-                    ->label('Manager')
-                    ->options(function () {
-                        $section = auth()->user()?->section;
-                
-                        return Admin::where('role', 'sub_admin')
-                            ->where('section', $section)
-                            ->get()
-                            ->pluck('name', 'id')
-                            ->toArray();
-                    })
-                    ->required(),
-                ])->columns(1),   
-            ]);
+                        ->label('Manager')
+                        ->options(function () {
+                            $section = auth()->user()?->section;
+                            return \App\Models\Admin::where('role', 'sub_admin')
+                                ->where('section', $section)
+                                ->pluck('name', 'id')
+                                ->toArray();
+                        })
+                        ->required(),
+                ])->columns(1),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -188,21 +171,21 @@ class RestaurantResource extends Resource
                 Tables\Columns\TextColumn::make('cuisine')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('priceRange')
+                Tables\Columns\TextColumn::make('price_range')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('openingTime')
+                Tables\Columns\TextColumn::make('opening_time')
                 ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('closingTime')
+                Tables\Columns\TextColumn::make('closing_time')
                 ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('averageRating')
+                Tables\Columns\TextColumn::make('average_rating')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('totalRatings')
+                Tables\Columns\TextColumn::make('total_ratings')
                     ->numeric()
                     ->sortable(),
-                    ImageColumn::make('mainImageURL')
+                    ImageColumn::make('main_image')
                     ->label('Image')
                     ->getStateUsing(fn ($record) => asset(asset('images/'.$record->MainImageURL) )) 
                     ->width(50),
@@ -214,11 +197,11 @@ class RestaurantResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('hasReservation')
+                Tables\Columns\IconColumn::make('has_reservation')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('isFeatured')
+                Tables\Columns\IconColumn::make('is_featured')
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
                

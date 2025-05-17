@@ -5,6 +5,8 @@ namespace App\Filament\TravelSubAdmin\Resources;
 use App\Filament\TravelSubAdmin\Resources\PackageInclusionResource\Pages;
 use App\Filament\TravelSubAdmin\Resources\PackageInclusionResource\RelationManagers;
 use App\Models\PackageInclusion;
+use App\Models\TravelAgency;
+use App\Models\TravelPackage;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -37,7 +39,7 @@ class PackageInclusionResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->whereHas('package.tour', function ($query) {
+            ->whereHas('package.agency', function ($query) {
                 $query->where('admin_id', auth()->id());
             });
     }
@@ -45,10 +47,17 @@ class PackageInclusionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Hidden::make('package_id')
-                ->default(fn () => \App\Models\Tour::where('admin_id', auth()->id())->value('id')),
-                
-                Forms\Components\Select::make('inclusionType')
+                Forms\Components\Select::make('package_id')
+                ->label('Choose Package')
+                ->options(function () {
+                    $agency_id = TravelAgency::where('admin_id', auth()->id())->value('id');
+            
+                    return TravelPackage::where('agency_id', $agency_id)
+                        ->pluck('name', 'id');
+                })
+                ->searchable()
+                ->required(),
+                Forms\Components\Select::make('inclusion_type')
                     ->label('Inclusion Type')
                     ->options([
                         1 => 'Tour',
@@ -62,7 +71,7 @@ class PackageInclusionResource extends Resource
                 Forms\Components\TextInput::make('description')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Toggle::make('isHighlighted')
+                Forms\Components\Toggle::make('is_highlighted')
                     ->required(),
             ]);
     }
@@ -74,12 +83,12 @@ class PackageInclusionResource extends Resource
                 Tables\Columns\TextColumn::make('package.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('inclusionType')
+                Tables\Columns\TextColumn::make('inclusion_type')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('description')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('isHighlighted')
+                Tables\Columns\IconColumn::make('is_highlighted')
                     ->boolean(),
             ])
             ->filters([

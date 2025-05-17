@@ -39,7 +39,7 @@ class HotelRepository implements HotelInterface
                 ])->exists();
             }
             $now = now();
-            $promotion = Promotion::where('isActive', true)
+            $promotion = Promotion::where('is_active', true)
                 ->where('start_date', '<=', $now)
                 ->where('end_date', '>=', $now)
                 ->where('applicable_type', 2)
@@ -55,7 +55,7 @@ class HotelRepository implements HotelInterface
         'hotel ' => $hotel,
         'image'=>$hotel->images,
         'rooms'=>$roomsData,
-        'totalRatings'=>$hotel->totalRatings,
+        'total_ratings'=>$hotel->total_ratings,
         'is_favourited' => $isFavourited,
         'promotion' => $promotion ? [
             'promotion_code' => $promotion->promotion_code,
@@ -81,7 +81,7 @@ class HotelRepository implements HotelInterface
                 ])->exists();
             }
             $now = now();
-            $promotion = Promotion::where('isActive', true)
+            $promotion = Promotion::where('is_active', true)
                 ->where('start_date', '<=', $now)
                 ->where('end_date', '>=', $now)
                 ->where('applicable_type', 2) 
@@ -145,8 +145,8 @@ class HotelRepository implements HotelInterface
             $hotelRoom+=$roomType->number;
         }
         $bookingRoom = HotelBooking::where('hotel_id', $hotel->id)
-        ->whereDate('checkInDate', '<=', now()->toDateString())
-        ->whereDate('checkOutDate', '>', now()->toDateString())
+        ->whereDate('check_in_date', '<=', now()->toDateString())
+        ->whereDate('check_out_date', '>', now()->toDateString())
         ->count();
         
         if($bookingRoom < $hotelRoom){
@@ -165,7 +165,7 @@ class HotelRepository implements HotelInterface
             return $this->error('hotel not found', 404);
         }
         $hotelRoom=RoomType::where([
-            'name'=>$request->roomType,
+            'name'=>$request->room_type,
             'hotel_id'=>$hotel->id
             ])->first();
         if (!$hotelRoom) {
@@ -173,8 +173,8 @@ class HotelRepository implements HotelInterface
         }
         $totalRooms = $hotelRoom->number;
         $bookingRoom=HotelBooking::where([
-            'checkInDate'=>now()->toDateString(),
-            'roomType_id'=>$hotelRoom->id
+            'check_in_date'=>now()->toDateString(),
+            'room_type_id'=>$hotelRoom->id
             ])->count();
         
         if($bookingRoom < $totalRooms){
@@ -187,209 +187,129 @@ class HotelRepository implements HotelInterface
             'aviableRoom' => $aviableRoom,
         ]);
     }
-
-    public function bookHotelWithPromotion($id,HotelBookingRequest $request){
-        $hotel=Hotel::with('roomTypes')->where('id',$id)->first();
-        if (!$hotel) {
-            return $this->error('hotel not found', 404);
-        }
-        $hotelRoom=RoomType::where([
-            'id'=>$request->roomType_id,
-            'hotel_id'=>$hotel->id
-            ])->first();
-        if (!$hotelRoom) {
-            return $this->error('hotelRoom not found', 404);
-        }
-        $discount = $hotel->discount ?? 0;
-        $checkInDate = Carbon::parse($request->checkInDate);
-        $checkOutDate = $checkInDate->copy()->addDays($request->numberOfDays);
-
-        $bookingRoom=HotelBooking::where('roomType_id',$hotelRoom->roomType_id)
-        ->where('hotel_id',$hotel->id)
-            ->whereDate('checkInDate', '<=', now()->toDateString())
-            ->whereDate('checkOutDate', '>', now()->toDateString())
-            ->count();
-        if($bookingRoom > $hotelRoom->number){
-            return $this->error('no aviable room', 404);
-        }   
-        $bookedRoomNumbers = HotelBooking::where('roomType_id', $hotelRoom->id)
-        ->where('hotel_id', $hotel->id)
-        ->where(function ($query) use ($checkInDate, $checkOutDate) {
-            $query->whereBetween('checkInDate', [$checkInDate, $checkOutDate])
-                ->orWhereBetween('checkOutDate', [$checkInDate, $checkOutDate])
-                ->orWhere(function ($q) use ($checkInDate, $checkOutDate) {
-                    $q->where('checkInDate', '<=', $checkInDate)
-                        ->where('checkOutDate', '>=', $checkOutDate);
-                });
-        })
-        ->pluck('hotelRoom') 
-        ->toArray();
-
-        $allRoomNumbers = range(1, $hotelRoom->number);
-
-        $availableRooms = array_diff($allRoomNumbers, $bookedRoomNumbers);
-
-        if (empty($availableRooms)) {
-        return $this->error('No available rooms for selected type and date', 400);
-        }
-
-        $assignedRoomNumber = collect($availableRooms)->random();
-
-        $bookingReference = 'HB-' . strtoupper(uniqid());
-        $totalCost = $hotelRoom->basePrice * $request->numberOfRooms * $request->numberOfDays;
-
-        $discountAmount = ($discount > 0) ? ($totalCost * $discount / 100) : 0;
-        $totalCostAfterDiscount = $totalCost - $discountAmount;
-
-        $booking = Booking::create([
-            'bookingReference' => $bookingReference,
-            'user_id' => auth('sanctum')->id(),
-            'bookingType' => 2, 
-            'totalPrice' => $totalCostAfterDiscount, 
-        'discountAmount' => $discountAmount,
-            'paymentStatus' => 1,
-        ]);
-        $RoomReservation = HotelBooking::create([
-            'user_id' => auth('sanctum')->id(),
-            'hotel_id' => $hotel->id,
-            'roomType_id' => $request->roomType_id,
-            'hotelRoom'=>$assignedRoomNumber ,
-            'checkInDate' => $checkInDate,
-            'checkOutDate' => $checkOutDate,
-            'numberOfGuests' => $request->numberOfGuests,
-            'numberOfRooms' => $request->numberOfRooms,
-            'booking_id' => $booking->id,
-            'cost' => $totalCostAfterDiscount,
-        ]);
-        $this->addPointsFromAction(auth('sanctum')->user(), 'book_hotel', 1);
-        return $this->success('Nearby Hotels retrieved successfully', [
-            'bookingReference' => $booking->bookingReference,
-            'hotel' => $RoomReservation->hotel_id,
-            'hotelRoom' => $RoomReservation->hotelRoom,
-            'roomType' => $RoomReservation->roomType_id,
-            'checkInDate' => $RoomReservation->checkInDate,
-            'numberOfGuests' => $RoomReservation->numberOfGuests,
-            'numberOfRoom' => $RoomReservation->numberOfRoom,
-            'cost' => $RoomReservation->cost,
-        'discountAmount' => $discountAmount,
-        ]);
-    }
     public function bookHotel($id, HotelBookingRequest $request)
     {
         $hotel = Hotel::with('roomTypes')->find($id);
         if (!$hotel) return $this->error('Hotel not found', 404);
     
-        $hotelRoom = RoomType::where([
-            'id' => $request->roomType_id,
+        $roomType = RoomType::where([
+            'id' => $request->room_type_id,
             'hotel_id' => $hotel->id
         ])->first();
-        if (!$hotelRoom) return $this->error('Hotel room not found', 404);
     
-        $checkInDate = Carbon::parse($request->checkInDate);
-        $checkOutDate = $checkInDate->copy()->addDays($request->numberOfDays);
+        if (!$roomType) return $this->error('Room type not found', 404);
     
-        $bookedRoomNumbers = HotelBooking::where('roomType_id', $hotelRoom->id)
-            ->where('hotel_id', $hotel->id)
-            ->where(function ($query) use ($checkInDate, $checkOutDate) {
-                $query->whereBetween('checkInDate', [$checkInDate, $checkOutDate])
-                    ->orWhereBetween('checkOutDate', [$checkInDate, $checkOutDate])
-                    ->orWhere(function ($q) use ($checkInDate, $checkOutDate) {
-                        $q->where('checkInDate', '<=', $checkInDate)
-                            ->where('checkOutDate', '>=', $checkOutDate);
-                    });
-            })
-            ->pluck('hotelRoom')
-            ->toArray();
-    
-        $allRoomNumbers = range(1, $hotelRoom->number);
-        $availableRooms = array_diff($allRoomNumbers, $bookedRoomNumbers);
-    
-        if (empty($availableRooms)) {
-            return $this->error('No available rooms for selected type and date', 400);
+        $check_in_date = Carbon::parse($request->check_in_date);
+        $check_out_date = $check_in_date->copy()->addDays($request->number_of_days);
+        $dates = [];
+        for ($date = $check_in_date->copy(); $date < $check_out_date; $date->addDay()) {
+            $dates[] = $date->toDateString();
         }
     
-        $assignedRoomNumber = collect($availableRooms)->random();
-        $bookingReference = 'HB-' . strtoupper(uniqid());
+        $availability = RoomAvailability::where('room_type_id', $roomType->id)
+            ->whereIn('date', $dates)
+            // ->where('is_blocked', false)
+            ->get()
+            ->keyBy(function ($item) {
+                return Carbon::parse($item->date)->toDateString();
+            });
+
+        foreach ($dates as $date) {
+            if (!isset($availability[$date])) {
+                logger()->error("Date $date not found in availability");
     
-        $totalCost = $hotelRoom->basePrice * $request->numberOfRooms * $request->numberOfDays;
+                $todayPlusMonth = now()->addMonth()->toDateString();
+                if ($date > $todayPlusMonth) {
+                    return $this->error("You can't make a reservation more than a month in advance", 400);
+                }
+                return $this->error("No availability set for date $date", 400);
+            }
     
+            if ($availability[$date]->available_rooms < $request->number_of_rooms) {
+                logger()->error("Not enough rooms on $date: requested {$request->number_of_rooms}, available {$availability[$date]->available_rooms}");
+                return $this->error("Not enough rooms available on $date", 400);
+            }
+        }
+    
+        $totalCost = 0;
+        foreach ($dates as $date) {
+            $price = $availability[$date]->price ?? $roomType->base_price;
+            $totalCost += $price * $request->number_of_rooms;
+        }
+        
+
         $promotion = null;
-        $promotionCode = $request->promotion_code;
-    
-        if ($promotionCode) {
-            $promotion = Promotion::where('promotion_code', $promotionCode)
-            ->where('isActive', true)
+    $promotionCode = $request->promotion_code;
+
+    if ($promotionCode) {
+        $promotion = Promotion::where('promotion_code', $promotionCode)
+            ->where('is_active', true)
             ->where('start_date', '<=', now())
             ->where('end_date', '>=', now())
             ->where(function ($q) {
-                $q->where('applicable_type', 1) 
-                  ->orWhere('applicable_type', 3); 
+                $q->where('applicable_type', 1)->orWhere('applicable_type', 3);
             })
             ->first();
 
-            if (!$promotion || !$promotion->isValid) {
-                return $this->error('Invalid or expired promotion code', 400);
-            }
-    
-            if ($totalCost < $promotion->minimum_purchase) {
-                return $this->error('Total does not meet minimum purchase requirement for this code', 400);
-            }
-    
-            if (!in_array($promotion->applicable_type, [null, 1, 3])) {
-                return $this->error('This code cannot be applied to hotel bookings', 400);
-            }
+        if (!$promotion || !$promotion->is_active) {
+            return $this->error('Invalid or expired promotion code', 400);
         }
-    
-        $discountAmount = 0;
-        if ($promotion) {
-            $discountAmount = $promotion->discount_type == 1
-                ? ($totalCost * $promotion->discount_value / 100)
-                : $promotion->discount_value;
-    
-            $discountAmount = min($discountAmount, $totalCost);
+
+        if ($totalCost < $promotion->minimum_purchase) {
+            return $this->error('Total does not meet minimum purchase requirement', 400);
         }
-    
-        $totalCostAfterDiscount = $totalCost - $discountAmount;
-    
+    }
+
+    $discountAmount = 0;
+    if ($promotion) {
+        $discountAmount = $promotion->discount_type == 1
+            ? ($totalCost * $promotion->discount_value / 100)
+            : $promotion->discount_value;
+
+        $discountAmount = min($discountAmount, $totalCost);
+    }
+
+    $totalAfterDiscount = $totalCost - $discountAmount;
+
         $booking = Booking::create([
-            'bookingReference' => $bookingReference,
+            'booking_reference' => 'HB-' . strtoupper(uniqid()),
             'user_id' => auth('sanctum')->id(),
-            'bookingType' => 2,
-            'totalPrice' => $totalCostAfterDiscount,
-            'discountAmount' => $discountAmount,
-            'paymentStatus' => 1,
+            'booking_type' => 2,
+            'total_price' => $totalAfterDiscount,
+            'discount_amount' => $discountAmount,
+            'payment_status' => 1,
         ]);
     
         $RoomReservation = HotelBooking::create([
             'user_id' => auth('sanctum')->id(),
             'hotel_id' => $hotel->id,
-            'roomType_id' => $request->roomType_id,
-            'hotelRoom' => $assignedRoomNumber,
-            'checkInDate' => $checkInDate,
-            'checkOutDate' => $checkOutDate,
-            'numberOfGuests' => $request->numberOfGuests,
-            'numberOfRooms' => $request->numberOfRooms,
+            'room_type_id' => $request->room_type_id,
+            'hotel_room' => 1,
+            'check_in_date' => $check_in_date,
+            'check_out_date' => $check_out_date,
+            'number_of_guests' => $request->number_of_guests,
+            'number_of_rooms' => $request->number_of_rooms,
             'booking_id' => $booking->id,
-            'cost' => $totalCostAfterDiscount,
+            'cost' => $totalAfterDiscount,
         ]);
     
+        foreach ($dates as $date) {
+            $availability[$date]->decrement('available_rooms', $request->number_of_rooms);
+        }
+
         if ($promotion) {
             $promotion->increment('current_usage');
         }
-    
+
         $this->addPointsFromAction(auth('sanctum')->user(), 'book_hotel', 1);
-    
-        return $this->success('Hotel booked successfully with promotion', [
-            'bookingReference' => $booking->bookingReference,
-            'hotel' => $RoomReservation->hotel_id,
-            'hotelRoom' => $RoomReservation->hotelRoom,
-            'roomType' => $RoomReservation->roomType_id,
-            'checkInDate' => $RoomReservation->checkInDate,
-            'numberOfGuests' => $RoomReservation->numberOfGuests,
-            'numberOfRoom' => $RoomReservation->numberOfRooms,
-            'cost' => $RoomReservation->cost,
-            'discountAmount' => $discountAmount,
-            'promotion_code' => $promotion?->promotion_code,
+
+        return $this->success('Hotel booked successfully', [
+            'booking_reference' => $booking->booking_reference,
+            'check_in_date' => $check_in_date,
+            'check_out_date' => $check_out_date,
+            'room_type' => $roomType->id,
+            'cost' => $totalAfterDiscount,
+            'discount_amount' => $discountAmount,
         ]);
     }
     public function showHistory(){
@@ -399,10 +319,10 @@ class HotelRepository implements HotelInterface
         foreach($hotelReservations as $hotelReservation){
             $result[]=[
                 'hotel'=>$hotelReservation->hotel->name,
-                'roomType'=>$hotelReservation->roomType->name,
-                'numberOfGuests'=>$hotelReservation->numberOfGuests,
-                'numberOfRoom'=>$hotelReservation->numberOfRoom,
-                'checkInDate'=>$hotelReservation->checkInDate,
+                'room_type'=>$hotelReservation->room_type->name,
+                'number_of_guests'=>$hotelReservation->number_of_guests,
+                'number_of_room'=>$hotelReservation->number_of_room,
+                'check_in_date'=>$hotelReservation->check_in_date,
                 'cost'=>$hotelReservation->cost,
             ];
         }

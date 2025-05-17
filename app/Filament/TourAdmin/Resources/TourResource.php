@@ -51,45 +51,63 @@ class TourResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Select::make('location_id')
-                    ->label('Location')
-                    ->relationship('location', 'name') 
-                    ->searchable()
-                    ->required(),
+                    Forms\Components\Section::make('Location')
+                    ->schema([
+                        Forms\Components\TextInput::make('latitude')
+                            ->label('Latitude')
+                            ->required()
+                            ->readonly(),
+                        Forms\Components\TextInput::make('longitude')
+                            ->label('Longitude')
+                            ->required()
+                            ->readonly(),
+                            Forms\Components\TextInput::make('city')
+                            ->label('City')
+                            ->required(),
+                        
+                        Forms\Components\TextInput::make('country')
+                            ->label('Country')
+                            ->required(),
+                        
+                        Forms\Components\Placeholder::make('Map')
+                            ->content(function () {
+                                return view('map');
+                            })->columnSpanFull(),
+                    ])->columns(2),
                 Forms\Components\Textarea::make('description')
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('shortDescription')
+                Forms\Components\TextInput::make('short_description')
                     ->maxLength(255)
                     ->default(null),
-                Forms\Components\TextInput::make('durationHours')
+                Forms\Components\TextInput::make('duration_hours')
                     ->numeric()
                     ->default(null),
-                Forms\Components\TextInput::make('durationDays')
+                Forms\Components\TextInput::make('duration_days')
                     ->numeric()
                     ->default(null),
-                Forms\Components\TextInput::make('basePrice')
+                Forms\Components\TextInput::make('base_price')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('discountPercentage')
+                Forms\Components\TextInput::make('discount_percentage')
                     ->required()
                     ->numeric()
                     ->default(0.00),
-                Forms\Components\TextInput::make('maxCapacity')
+                Forms\Components\TextInput::make('max_capacity')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('minParticipants')
+                Forms\Components\TextInput::make('min_participants')
                     ->required()
                     ->numeric()
                     ->default(1),
-                Forms\Components\TextInput::make('difficultyLevel')
+                Forms\Components\TextInput::make('difficulty_level')
                     ->required()
                     ->numeric()
                     ->default(1),
-                Forms\Components\TextInput::make('averageRating')
+                Forms\Components\TextInput::make('average_rating')
                     ->required()
                     ->numeric()
                     ->default(0.00),
-                Forms\Components\TextInput::make('totalRatings')
+                Forms\Components\TextInput::make('total_ratings')
                     ->required()
                     ->numeric()
                     ->default(0),
@@ -97,14 +115,14 @@ class TourResource extends Resource
                     ->relationship('categories', 'name')
                     ->label('Tour Categories')
                     ->preload(),
-                FileUpload::make('mainImageURL')
+                FileUpload::make('main_image')
                 ->label('Tour Image')
                 ->image()
                 ->directory('tour_images') 
                 ->visibility('public'),
-                Forms\Components\Toggle::make('isActive')
+                Forms\Components\Toggle::make('is_active')
                     ->required(),
-                Forms\Components\Toggle::make('isFeatured')
+                Forms\Components\Toggle::make('is_featured')
                     ->required(),
                     Forms\Components\Select::make('admin_id')
                     ->label('Manager')
@@ -127,48 +145,48 @@ class TourResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('shortDescription')
+                Tables\Columns\TextColumn::make('short_description')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('location.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('durationHours')
+                Tables\Columns\TextColumn::make('duration_hours')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('durationDays')
+                Tables\Columns\TextColumn::make('duration_days')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('basePrice')
+                Tables\Columns\TextColumn::make('base_price')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('discountPercentage')
+                Tables\Columns\TextColumn::make('discount_percentage')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('maxCapacity')
+                Tables\Columns\TextColumn::make('max_capacity')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('minParticipants')
+                Tables\Columns\TextColumn::make('min_participants')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('difficultyLevel')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('averageRating')
+                Tables\Columns\TextColumn::make('average_rating')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('totalRatings')
+                Tables\Columns\TextColumn::make('total_ratings')
                     ->numeric()
                     ->sortable(),
-                ImageColumn::make('mainImageURL')
+                ImageColumn::make('main_image')
                     ->label('Image')
-                    ->getStateUsing(fn ($record) => asset('images/'.$record->imageURL) ) 
+                    ->getStateUsing(fn ($record) => asset('images/'.$record->main_image) ) 
                     ->height(50)
                     ->width(50),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('isFeatured')
+                Tables\Columns\IconColumn::make('is_featured')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('createdBy')
+                Tables\Columns\TextColumn::make('created_by')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')

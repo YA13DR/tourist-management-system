@@ -49,22 +49,23 @@ class HotelImageResource extends Resource
             ->schema([
                 Forms\Components\Hidden::make('hotel_id')
                 ->default(fn () => \App\Models\Hotel::where('admin_id', auth()->id())->value('id')),
-                FileUpload::make('imageURL')
-                ->label('Hotel Image')
-                ->image()
-                ->directory('hotel_images') 
-                ->visibility('public')
-                ->required(),
-                Forms\Components\TextInput::make('displayOrder')
+                
+                Forms\Components\TextInput::make('display_order')
                     ->required()
                     ->numeric()
                     ->default(0),
                 Forms\Components\TextInput::make('caption')
                     ->maxLength(255)
                     ->default(null),
-                Forms\Components\Toggle::make('isActive')
+                Forms\Components\Toggle::make('is_active')
                     ->required(),
-            ]);
+                FileUpload::make('image')
+                    ->label('Hotel Image')
+                    ->image()
+                    ->directory('hotel_images') 
+                    ->visibility('public')
+                    ->required(),
+            ])->columns(3);
     }
 
     public static function table(Table $table): Table
@@ -74,16 +75,16 @@ class HotelImageResource extends Resource
                 Tables\Columns\TextColumn::make('hotel.name')
                     ->numeric()
                     ->sortable(),
-                    ImageColumn::make('imageURL')
+                    ImageColumn::make('image')
                     ->label('Image')
-                    ->getStateUsing(fn ($record) => asset(asset('images/'.$record->imageURL) )) 
+                    ->getStateUsing(fn ($record) => asset(asset('images/'.$record->image) )) 
                     ->width(50),
-                Tables\Columns\TextColumn::make('displayOrder')
+                Tables\Columns\TextColumn::make('display_order')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('caption')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])
             ->filters([

@@ -49,13 +49,13 @@ class RestaurantImageResource extends Resource
     {
         return $form
             ->schema([
-                FileUpload::make('imageURL')
+                FileUpload::make('image')
                 ->label('Restaurant Image')
                 ->image()
                 ->directory('restaurant_images') 
                 ->visibility('public')
                 ->required(),
-                Forms\Components\Toggle::make('isActive')
+                Forms\Components\Toggle::make('is_active')
                     ->required(),
                     Forms\Components\Hidden::make('restaurant_id')
                     ->default(fn () => \App\Models\Restaurant::where('admin_id', auth()->id())->value('id')),
@@ -75,7 +75,7 @@ class RestaurantImageResource extends Resource
         return $table
             ->columns([
                 
-                ImageColumn::make('imageURL')
+                ImageColumn::make('image')
                 ->label('Image')
                 ->getStateUsing(fn ($record) => asset('images/'.$record->imageURL) ) 
                 ->height(50)
@@ -83,12 +83,12 @@ class RestaurantImageResource extends Resource
                 Tables\Columns\TextColumn::make('restaurant.name')
                     ->label('restarant Name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('displayOrder')
+                Tables\Columns\TextColumn::make('display_order')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('caption')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])
             ->filters([

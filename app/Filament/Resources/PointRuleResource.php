@@ -17,15 +17,24 @@ class PointRuleResource extends Resource
 {
     protected static ?string $model = PointRule::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
+    
+    protected static ?string $navigationGroup = 'Point Managment';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('action')
+                Forms\Components\Select::make('action')
                     ->required()
-                    ->maxLength(255),
+                    ->options([
+                        'book_flight' => 'book_flight',
+                        'book_tour' => ' book_tour',
+                        'book_hotel' => 'book_hotel ',
+                        'book_restaurant' => 'book_restaurant ',
+                        'add_restaurant_order' => 'add_restaurant_order ',
+                    ])
+                    ->label('Booking Type '),
                 Forms\Components\TextInput::make('points')
                     ->required()
                     ->numeric(),

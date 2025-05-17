@@ -5,10 +5,10 @@
             <h2 class="text-2xl font-bold text-primary-600 mb-4">🏨 Tour Information</h2>
             <ul class="space-y-2 text-gray-900">
                 <li><strong>Name:</strong> {{ $tour->name }}</li>
-                <li><strong>Location:</strong> {{ $tour->location->name ?? 'N/A' }}</li>
-                <li><strong>Duration:</strong> {{ $tour->durationDays }} days / {{ $tour->durationHours }} hrs</li>
-                <li><strong>Base Price:</strong> ${{ $tour->basePrice }}</li>
-                <li><strong>Status:</strong> {{ $tour->isActive ? 'Active' : 'Inactive' }}</li>
+                <li><strong>Location:</strong> {{ $tour->location->city->name ?? 'N/A' }}</li>
+                <li><strong>Duration:</strong> {{ $tour->duration_days }} days / {{ $tour->duration_hours }} hrs</li>
+                <li><strong>Base Price:</strong> ${{ $tour->base_price }}</li>
+                <li><strong>Status:</strong> {{ $tour->is_active ? 'Active' : 'Inactive' }}</li>
             </ul>
         </div>
 
@@ -27,9 +27,9 @@
             <h2 class="text-2xl font-bold text-primary-600 mb-4">📅 Schedules</h2>
             @foreach($tour->schedules as $schedule)
                 <div class="border-b py-2">
-                    <strong>{{ $schedule->startDate }} - {{ $schedule->endDate }}</strong><br>
-                    Spots: {{ $schedule->availableSpots }} - 
-                    Price: ${{ $schedule->price ?? $tour->basePrice }}
+                    <strong>{{ $schedule->start_date }} - {{ $schedule->end_date }}</strong><br>
+                    Spots: {{ $schedule->available_spots }} - 
+                    Price: ${{ $schedule->price ?? $tour->base_price }}
                 </div>
             @endforeach
         </div>

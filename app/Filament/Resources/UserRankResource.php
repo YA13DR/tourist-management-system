@@ -17,7 +17,9 @@ class UserRankResource extends Resource
 {
     protected static ?string $model = UserRank::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+
+    protected static ?string $navigationGroup = 'Point Managment';
 
     public static function form(Form $form): Form
     {
@@ -51,7 +53,10 @@ class UserRankResource extends Resource
                 ]),
             ]);
     }
-
+    public static function canCreate(): bool
+    {
+        return false; 
+    }
     public static function getRelations(): array
     {
         return [

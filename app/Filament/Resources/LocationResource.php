@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\TourAdmin\Resources;
+namespace App\Filament\Resources;
 
-use App\Filament\TourAdmin\Resources\LocationResource\Pages;
-use App\Filament\TourAdmin\Resources\LocationResource\RelationManagers;
+use App\Filament\Resources\LocationResource\Pages;
+use App\Filament\Resources\LocationResource\RelationManagers;
 use App\Models\Location;
 use Filament\Facades\Filament;
 use Filament\Forms;
@@ -24,46 +24,58 @@ class LocationResource extends Resource
     public static function canAccess(): bool
     {
         return Filament::auth()->check() 
-         && (Filament::auth()->user()->role === 'super_admin' 
-         
-         ||(
-            Filament::auth()->user()->role === 'admin' 
-            && Filament::auth()->user()->section === 'tour'
-         ));
+         && Filament::auth()->user()->role === 'super_admin' ;
     }
     public static function shouldRegisterNavigation(): bool
     {
         return Filament::auth()->check()   
-        && (Filament::auth()->user()->role === 'super_admin' 
-         ||(
-            Filament::auth()->user()->role === 'admin' 
-            && Filament::auth()->user()->section === 'tour'
-         ));
+        && Filament::auth()->user()->role === 'super_admin' ;
     }
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required(),
-                Forms\Components\TextInput::make('latitude')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\TextInput::make('longitude')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\TextInput::make('city')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('country')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('region')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\Toggle::make('isPopular')
-                    ->required(),
-            ]);
+                Forms\Components\Section::make('General Information')
+                ->schema([
+                    Forms\Components\TextInput::make('name')
+                        ->label('Name')
+                        ->required(),
+                    Forms\Components\Toggle::make('isPopular')
+                        ->label('Is Popular')
+                        ->required(),
+                ])
+                ->columns(2),
+    
+            Forms\Components\Section::make('Location')
+                ->schema([
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\TextInput::make('latitude')
+                                ->label('Latitude')
+                                ->required()
+                                ->readonly(),
+    
+                            Forms\Components\TextInput::make('longitude')
+                                ->label('Longitude')
+                                ->required()
+                                ->readonly(),
+    
+                            Forms\Components\TextInput::make('city.name')
+                                ->label('City'),
+    
+                            Forms\Components\TextInput::make('city.country.name')
+                                ->label('Country'),
+    
+                            Forms\Components\TextInput::make('region')
+                                ->label('Region'),
+                        ]),
+    
+                    Forms\Components\Placeholder::make('Map')
+                        ->label('Map')
+                        ->content(fn () => view('map'))
+                        ->columnSpanFull(),
+                    ])
+                    ]);
     }
 
     public static function table(Table $table): Table

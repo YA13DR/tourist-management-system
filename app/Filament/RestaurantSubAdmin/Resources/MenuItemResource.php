@@ -33,41 +33,62 @@ class MenuItemResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('category_id')
-                ->label('Category')
-                ->options(function () {
-                    $restaurantId = \App\Models\Restaurant::where('admin_id', auth()->id())->value('id');
-                    return \App\Models\MenuCategory::where('restaurant_id', $restaurantId)
-                        ->pluck('name', 'id');
-                })
-                ->required(), Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('price')
-                    ->required()
-                    ->numeric()
-                    ->prefix('$'),
-                Forms\Components\Toggle::make('isVegetarian')
-                    ->required(),
-                Forms\Components\Toggle::make('isVegan')
-                    ->required(),
-                Forms\Components\Toggle::make('isGlutenFree')
-                    ->required(),
-                Forms\Components\TextInput::make('spiciness')
-                    ->numeric()
-                    ->default(null),
-                    FileUpload::make('imageURL')
-                    ->label('Restaurant Image')
-                    ->image()
-                    ->directory('restaurant_images') 
-                    ->visibility('public'),
-                    // ->required(),
-                Forms\Components\Toggle::make('isActive')
-                    ->required(),
-                Forms\Components\Toggle::make('isFeatured')
-                    ->required(),
+                Forms\Components\Grid::make(2)
+                ->schema([
+                    Forms\Components\Select::make('category_id')
+                        ->label('Category')
+                        ->options(function () {
+                            $restaurantId = \App\Models\Restaurant::where('admin_id', auth()->id())->value('id');
+                            return \App\Models\MenuCategory::where('restaurant_id', $restaurantId)
+                                ->pluck('name', 'id');
+                        })
+                        ->required(),
+        
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(255),
+        
+                    Forms\Components\TextInput::make('price')
+                        ->required()
+                        ->numeric()
+                        ->prefix('$'),
+        
+                    Forms\Components\TextInput::make('spiciness')
+                        ->numeric()
+                        ->default(null),
+                ]),
+        
+            Forms\Components\Textarea::make('description')
+                ->label('Description')
+                ->columnSpanFull(),
+        
+            Forms\Components\Grid::make(5)
+                ->schema([
+                    Forms\Components\Toggle::make('is_vegetarian')
+                        ->label('Vegetarian')
+                        ->required(),
+        
+                    Forms\Components\Toggle::make('is_vegan')
+                        ->label('Vegan')
+                        ->required(),
+        
+                    Forms\Components\Toggle::make('is_gluten_free')
+                        ->label('Gluten Free')
+                        ->required(),
+                    Forms\Components\Toggle::make('is_active')
+                        ->label('Active')
+                        ->required(),
+        
+                    Forms\Components\Toggle::make('is_featured')
+                        ->label('Featured')
+                        ->required(),
+                ]),
+        
+            FileUpload::make('image')
+                ->label('Restaurant Image')
+                ->image()
+                ->directory('restaurant_images')
+                ->visibility('public'),
             ]);
     }
 
@@ -78,7 +99,7 @@ class MenuItemResource extends Resource
                 Tables\Columns\TextColumn::make('category.name')
                     ->numeric()
                     ->sortable(),
-                ImageColumn::make('imageURL')
+                ImageColumn::make('image')
                     ->label('Image')
                     ->getStateUsing(fn ($record) => asset('images/'.$record->imageURL) ) 
                     ->height(50)
@@ -88,18 +109,18 @@ class MenuItemResource extends Resource
                 Tables\Columns\TextColumn::make('price')
                     ->money()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('isVegetarian')
+                Tables\Columns\IconColumn::make('is_vegetarian')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('isVegan')
+                Tables\Columns\IconColumn::make('is_vegan')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('isGlutenFree')
+                Tables\Columns\IconColumn::make('is_gluten_free')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('spiciness')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('isFeatured')
+                Tables\Columns\IconColumn::make('is_featured')
                     ->boolean(),
             ])
             ->filters([

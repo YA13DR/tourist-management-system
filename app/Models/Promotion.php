@@ -20,7 +20,7 @@ class Promotion extends Model
         'usage_limit',
         'current_usage',
         'applicable_type',
-        'isActive',
+        'is_active',
         'created_by',
         'created_at',
     ];
@@ -32,7 +32,7 @@ class Promotion extends Model
 
     public function getDiscountTypeNameAttribute()
     {
-        return $this->discount_type === 1 ? 'Percentage' : 'Fixed';
+        return $this->discount_type === 1 ? 'percentage' : 'fixed';
     }
 
     public function getIsValidAttribute()

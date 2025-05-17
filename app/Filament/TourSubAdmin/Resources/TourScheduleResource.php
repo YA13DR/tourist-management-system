@@ -69,14 +69,14 @@ class TourScheduleResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Hidden::make('tour_id')
-                    ->default(fn () => \App\Models\Tour::where('admin_id', auth()->id())->value('id')),
+                    ->default(fn () => Tour::where('admin_id', auth()->id())->value('id')),
             
-                Forms\Components\DatePicker::make('startDate')->required(),
-                Forms\Components\DatePicker::make('endDate'),
-                Forms\Components\TimePicker::make('startTime'),
-                Forms\Components\TextInput::make('availableSpots')->required()->numeric(),
+                Forms\Components\DatePicker::make('start_date')->required(),
+                Forms\Components\DatePicker::make('end_date'),
+                Forms\Components\TimePicker::make('start_time'),
+                Forms\Components\TextInput::make('available_spots')->required()->numeric(),
                 Forms\Components\TextInput::make('price')->numeric(),
-                Forms\Components\Toggle::make('isActive')->required(),
+                Forms\Components\Toggle::make('is_active')->required(),
             
                 Forms\Components\CheckboxList::make('activities')
                     ->relationship('activities', 'name')
@@ -92,25 +92,25 @@ class TourScheduleResource extends Resource
                 Tables\Columns\TextColumn::make('tour.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('startDate')
+                Tables\Columns\TextColumn::make('start_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('endDate')
+                Tables\Columns\TextColumn::make('end_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('startTime'),
+                Tables\Columns\TextColumn::make('start_time'),
                 Tables\Columns\TextColumn::make('activities.name')
                 ->label('Activities')
                 ->formatStateUsing(fn ($state, $record) =>
                     $record->activities->pluck('name')->join(', ')
                 ),
-                Tables\Columns\TextColumn::make('availableSpots')
+                Tables\Columns\TextColumn::make('available_spots')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('price')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])
             ->filters([

@@ -12,14 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
-       /** @use HasFactory<\Database\Factories\UserFactory> */
        use HasFactory, Notifiable,HasApiTokens;
-
-       /**
-        * The attributes that are mass assignable.
-        *
-        * @var array<int, string>
-        */
        protected $fillable = [
            'photo',
            'first_name',
@@ -33,12 +26,6 @@ class User extends Authenticatable
            'email_verified_at',
        ];
    
-     
-       /**
-        * The attributes that should be hidden for serialization.
-        *
-        * @var array<int, string>
-        */
        protected $hidden = [
            'password',
            'remember_token',
@@ -67,16 +54,13 @@ class User extends Authenticatable
 
     public function rank()
     {
-        return $this->hasOne(UserRank::class);
+        return $this->belongsTo(UserRank::class,'user_id','id');
     }
     public function createdTours(): HasMany
     {
         return $this->hasMany(Tour::class, 'CreatedBy', 'UserID');
     }
 
-    /**
-     * Get the bookings for the user.
-     */
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'UserID', 'UserID');

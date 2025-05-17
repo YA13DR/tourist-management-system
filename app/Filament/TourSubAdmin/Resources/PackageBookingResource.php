@@ -45,44 +45,44 @@ class PackageBookingResource extends Resource
                 $query->where('admin_id', auth()->id());
             });
     }
-    private static function calculateBaseCost($packageId, $numberOfAdults, $numberOfChildren)
-{
-    $package = TravelPackage::find($packageId);
-    if (!$package) return 0;
+    private static function calculateBaseCost($package_id, $number_of_adults, $number_of_children)
+    {
+        $package = TravelPackage::find($package_id);
+        if (!$package) return 0;
 
-    return $package->basePrice * ($numberOfAdults + $numberOfChildren);
-}
-
-private static function applyPromotion($cost, $promotionCode): float
-{
-    $promotion = Promotion::where('promotion_code', $promotionCode)
-        ->where('isActive', true)
-        ->where('start_date', '<=', now())
-        ->where('end_date', '>=', now())
-        ->where(function ($q) {
-            $q->where('applicable_type', 1)
-              ->orWhere('applicable_type', 3);
-        })
-        ->first();
-
-    if ($promotion) {
-        return $cost - ($cost * $promotion->discount_value / 100);
+        return $package->base_price * ($number_of_adults + $number_of_children);
     }
 
-    return -1; 
-}
+    private static function applyPromotion($cost, $promotionCode): float
+    {
+        $promotion = Promotion::where('promotion_code', $promotionCode)
+            ->where('is_active', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->where(function ($q) {
+                $q->where('applicable_type', 1)
+                ->orWhere('applicable_type', 3);
+            })
+            ->first();
 
-private static function calculateFinalCost($packageId, $numberOfAdults, $numberOfChildren, $promotionCode = null)
-{
-    $baseCost = self::calculateBaseCost($packageId, $numberOfAdults, $numberOfChildren);
+        if ($promotion) {
+            return $cost - ($cost * $promotion->discount_value / 100);
+        }
 
-    if ($promotionCode) {
-        $final = self::applyPromotion($baseCost, $promotionCode);
-        return $final !== -1 ? $final : $baseCost;
+        return -1; 
     }
 
-    return $baseCost;
-}
+    private static function calculateFinalCost($package_id, $number_of_adults, $number_of_children, $promotion_code = null)
+    {
+        $base_cost = self::calculateBaseCost($package_id, $number_of_adults, $number_of_children);
+
+        if ($promotion_code) {
+            $final = self::applyPromotion($base_cost, $promotion_code);
+            return $final !== -1 ? $final : $base_cost;
+        }
+
+        return $base_cost;
+    }
 
 public static function form(Form $form): Form
 {
@@ -95,10 +95,10 @@ public static function form(Form $form): Form
             ->relationship('package', 'name')
             ->required()
             ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                $adults = (int) $get('numberOfAdults') ?? 1;
-                $children = (int) $get('numberOfChildren') ?? 0;
-                $promotionCode = $get('promotion_code');
-                $set('cost', self::calculateFinalCost($state, $adults, $children, $promotionCode));
+                $adults = (int) $get('number_of_adults') ?? 1;
+                $children = (int) $get('number_of_children') ?? 0;
+                $promotion_code = $get('promotion_code');
+                $set('cost', self::calculateFinalCost($state, $adults, $children, $promotion_code));
 
                 $package = TravelPackage::find($state);
                 if ($package) {
@@ -108,29 +108,29 @@ public static function form(Form $form): Form
 
         Forms\Components\Hidden::make('agency_id'),
 
-        Forms\Components\TextInput::make('numberOfAdults')
+        Forms\Components\TextInput::make('number_of_adults')
             ->numeric()
             ->default(1)
             ->minValue(1)
             ->live()
             ->required()
             ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                $packageId = $get('package_id');
-                $children = (int) $get('numberOfChildren') ?? 0;
-                $promotionCode = $get('promotion_code');
-                $set('cost', self::calculateFinalCost($packageId, $state, $children, $promotionCode));
+                $package_id = $get('package_id');
+                $children = (int) $get('number_of_children') ?? 0;
+                $promotion_code = $get('promotion_code');
+                $set('cost', self::calculateFinalCost($package_id, $state, $children, $promotion_code));
             }),
 
-        Forms\Components\TextInput::make('numberOfChildren')
+        Forms\Components\TextInput::make('number_of_children')
             ->numeric()
             ->default(0)
             ->live()
             ->required()
             ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                $packageId = $get('package_id');
-                $adults = (int) $get('numberOfAdults') ?? 1;
-                $promotionCode = $get('promotion_code');
-                $set('cost', self::calculateFinalCost($packageId, $adults, $state, $promotionCode));
+                $package_id = $get('package_id');
+                $adults = (int) $get('number_of_adults') ?? 1;
+                $promotion_code = $get('promotion_code');
+                $set('cost', self::calculateFinalCost($package_id, $adults, $state, $promotion_code));
             }),
 
         Forms\Components\TextInput::make('promotion_code')
@@ -138,22 +138,22 @@ public static function form(Form $form): Form
             ->nullable()
             ->live()
             ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                $packageId = $get('package_id');
-                $adults = (int) $get('numberOfAdults') ?? 1;
-                $children = (int) $get('numberOfChildren') ?? 0;
+                $package_id = $get('package_id');
+                $adults = (int) $get('number_of_adults') ?? 1;
+                $children = (int) $get('number_of_children') ?? 0;
 
-                $costBefore = self::calculateBaseCost($packageId, $adults, $children);
-                $finalCost = self::applyPromotion($costBefore, $state);
+                $cost_before = self::calculateBaseCost($package_id, $adults, $children);
+                $final_cost = self::applyPromotion($cost_before, $state);
 
-                if ($finalCost === -1) {
+                if ($final_cost === -1) {
                     Notification::make()
                         ->title('Invalid or expired promotion code.')
                         ->danger()
                         ->send();
 
-                    $set('cost', $costBefore);
+                    $set('cost', $cost_before);
                 } else {
-                    $set('cost', $finalCost);
+                    $set('cost', $final_cost);
                 }
             }),
 
@@ -177,13 +177,13 @@ public static function form(Form $form): Form
                 Tables\Columns\TextColumn::make('package_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('startDate')
+                Tables\Columns\TextColumn::make('start_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('numberOfAdults')
+                Tables\Columns\TextColumn::make('number_of_adults')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('numberOfChildren')
+                Tables\Columns\TextColumn::make('number_of_children')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('cost')

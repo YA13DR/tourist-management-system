@@ -18,8 +18,8 @@ class RatingResource extends Resource
 {
     protected static ?string $model = Rating::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    protected static ?string $navigationIcon = 'heroicon-o-star';
+    protected static ?string $navigationGroup = 'Application Managment';
     public static function form(Form $form): Form
     {
         return $form
@@ -37,7 +37,7 @@ class RatingResource extends Resource
                 Tables\Columns\TextColumn::make('rating'),
                 Tables\Columns\TextColumn::make('comment')->limit(50),
                 Tables\Columns\TextColumn::make('admin_response')->limit(50),
-                Tables\Columns\IconColumn::make('isVisible')->boolean(),
+                Tables\Columns\IconColumn::make('is_visible')->boolean(),
             ])
             ->filters([
                 //
@@ -63,7 +63,10 @@ class RatingResource extends Resource
             //
         ];
     }
-
+    public static function canCreate(): bool
+    {
+        return false; 
+    }
     public static function getPages(): array
     {
         return [

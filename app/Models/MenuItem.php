@@ -10,65 +10,37 @@ class MenuItem extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'MenuItems';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'category_id',
         'name',
         'description',
         'price',
-        'imageURL',
-        'isVegetarian',
-        'isVegan',
-        'isGlutenFree',
+        'size',
+        'image',
+        'is_vegetarian',
+        'is_vegan',
+        'is_gluten_free',
         'spiciness',
-        'isAvailable',
-        'isPopular',
-        'updated_at',
-        'created_at',
+        'is_available',
+        'is_popular',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'price' => 'decimal:2',
-        'isVegetarian' => 'boolean',
-        'isVegan' => 'boolean',
-        'isGlutenFree' => 'boolean',
+        'is_vegetarian' => 'boolean',
+        'is_vegan' => 'boolean',
+        'is_gluten_free' => 'boolean',
         'spiciness' => 'integer',
-        'isAvailable' => 'boolean',
-        'isPopular' => 'boolean',
+        'is_available' => 'boolean',
+        'is_popular' => 'boolean',
     ];
 
-    /**
-     * Get the category that owns the menu item.
-     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(MenuCategory::class, 'category_id', 'id');
     }
-    // public function restaurant(): BelongsTo
-    // {
-    //     return $this->belongsTo(Restaurant::class);
-    // }
+    public function restaurant(): BelongsTo
+    {
+        return $this->belongsTo(Restaurant::class);
+    }
 }

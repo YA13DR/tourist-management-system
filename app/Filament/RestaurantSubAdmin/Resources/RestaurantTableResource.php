@@ -18,7 +18,7 @@ class RestaurantTableResource extends Resource
 {
     protected static ?string $model = RestaurantTable::class;
     
-    protected static ?string $navigationIcon = 'heroicon-o-flag';
+    protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
     protected static ?string $navigationGroup = 'Restaurant Managment';
 
     protected static ?int $navigationSort = 4;
@@ -59,7 +59,7 @@ class RestaurantTableResource extends Resource
                         'Private' => 'Private',
                     ])
                     ->required(),
-                Forms\Components\Toggle::make('isActive')
+                Forms\Components\Toggle::make('is_active')
                     ->required(),
                 Forms\Components\TextInput::make('cost')
                     ->required()
@@ -78,7 +78,7 @@ class RestaurantTableResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('location')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])
             ->filters([

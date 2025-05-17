@@ -54,51 +54,49 @@ class HotelResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
-                        FileUpload::make('mainImageURL')
+                        FileUpload::make('main_image')
                                     ->label('Hotel Image')
                                     ->image()
                                     ->directory('hotel_images') 
-                                    ->visibility('public' && 'storage')
-                                    ->required(),
+                                    ->visibility('public' && 'storage'),
                         Forms\Components\Textarea::make('description')
                                     ->columnSpanFull(),            
                     ])->columns(3),
                 Forms\Components\Section::make('INFO')
                     ->schema([
                     
-                    Forms\Components\TextInput::make('starRating')
+                    Forms\Components\TextInput::make('star_rating')
                         ->numeric()
                         ->default(null),
-                    Forms\Components\TextInput::make('averageRating')
+                    Forms\Components\TextInput::make('average_rating')
                         ->required()
                         ->numeric()
                         ->default(0.00),
-                    Forms\Components\TextInput::make('totalRatings')
+                    Forms\Components\TextInput::make('total_ratings')
                         ->required()
                         ->numeric()
                         ->default(0),
-                    Forms\Components\TimePicker::make('checkInTime'),
-                    Forms\Components\TimePicker::make('checkOutTime'),    
+                    Forms\Components\TimePicker::make('check_in_time'),
+                    Forms\Components\TimePicker::make('check_out_time'),    
                     ])->columns(3),
-                    Forms\Components\Section::make('Location')
-                // ->relationship('location') 
+                Forms\Components\Section::make('Location')
                 ->schema([
-                        
-                        Forms\Components\TextInput::make('latitude')
+                    Forms\Components\TextInput::make('latitude')
                         ->label('Latitude')
                         ->required()
                         ->readonly(),
-                    
                     Forms\Components\TextInput::make('longitude')
                         ->label('Longitude')
                         ->required()
                         ->readonly(),
                         Forms\Components\TextInput::make('city')
-                        ->label('City'),
+                        ->label('City')
+                        ->required(),
+                    
                     Forms\Components\TextInput::make('country')
-                        ->label('Country'),
-                    Forms\Components\TextInput::make('region')
-                        ->label('Region'),
+                        ->label('Country')
+                        ->required(),
+                    
                     Forms\Components\Placeholder::make('Map')
                         ->content(function () {
                             return view('map');
@@ -118,9 +116,9 @@ class HotelResource extends Resource
                     ])->columns(3),
                     Forms\Components\Section::make('INFO')
                     ->schema([
-                Forms\Components\Toggle::make('isActive')
+                Forms\Components\Toggle::make('is_active')
                     ->required(),
-                Forms\Components\Toggle::make('isFeatured')
+                Forms\Components\Toggle::make('is_featured')
                     ->required(),
                     Forms\Components\Select::make('admin_id')
                     ->label('Manager')
@@ -144,22 +142,22 @@ class HotelResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                ImageColumn::make('mainImageURL')
+                ImageColumn::make('main_image')
                     ->label('Image')
                     ->getStateUsing(fn ($record) => asset(asset('images/'.$record->mainImageURL) )) 
                     ->width(50),  
                 Tables\Columns\TextColumn::make('admin.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('checkInTime'),
-                Tables\Columns\TextColumn::make('checkOutTime'),
-                Tables\Columns\TextColumn::make('starRating')
+                Tables\Columns\TextColumn::make('checkIn_time'),
+                Tables\Columns\TextColumn::make('checkOut_time'),
+                Tables\Columns\TextColumn::make('star_rating')
                         ->numeric()
                         ->sortable(),
-                Tables\Columns\TextColumn::make('averageRating')
+                Tables\Columns\TextColumn::make('average_rating')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('totalRatings')
+                Tables\Columns\TextColumn::make('total_ratings')
                     ->numeric()
                     ->sortable(),
                 
@@ -169,9 +167,9 @@ class HotelResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('isFeatured')
+                Tables\Columns\IconColumn::make('is_featured')
                     ->boolean(),
                 
                 Tables\Columns\TextColumn::make('created_at')

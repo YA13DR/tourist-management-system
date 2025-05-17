@@ -10,25 +10,6 @@ class Rating extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'ratings';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'user_id',
         'booking_id',
@@ -37,31 +18,20 @@ class Rating extends Model
         'rating',
         'comment',
         'rating_date',
-        'isVisible',
+        'is_visible',
         'admin_response'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'RatingDate' => 'datetime',
-        'IsVisible' => 'boolean',
+        'rating_date' => 'datetime',
+        'is_visible' => 'boolean',
     ];
 
-    /**
-     * Get the user that owns the rating.
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'UserID', 'UserID');
     }
 
-    /**
-     * Get the booking that owns the rating.
-     */
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'BookingID', 'BookingID');

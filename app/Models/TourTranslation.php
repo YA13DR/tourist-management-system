@@ -10,34 +10,12 @@ class TourTranslation extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'TourTranslations';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'tour_id',
-        'languageCode',
-        'translatedDescription'
+        'language_code',
+        'translated_description'
     ];
 
-    /**
-     * Get the tour that owns the translation.
-     */
     public function tour(): BelongsTo
     {
         return $this->belongsTo(Tour::class, 'tour_id', 'id');

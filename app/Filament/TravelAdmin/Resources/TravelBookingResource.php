@@ -53,7 +53,7 @@ class TravelBookingResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.firstName')
+                Tables\Columns\TextColumn::make('user.first_name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('flight.flight_number')
                     ->searchable(),
@@ -94,6 +94,10 @@ class TravelBookingResource extends Resource
         return [
             //
         ];
+    }
+    public static function canCreate(): bool
+    {
+        return false; 
     }
 
     public static function getPages(): array

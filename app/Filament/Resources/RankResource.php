@@ -17,7 +17,9 @@ class RankResource extends Resource
 {
     protected static ?string $model = Rank::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-trophy';
+    
+    protected static ?string $navigationGroup = 'Point Managment';
 
     public static function form(Form $form): Form
     {

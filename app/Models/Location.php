@@ -10,52 +10,28 @@ class Location extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'Locations';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'latitude',
         'longitude',
-        'isPopular',
-        'city',
-        'country',
+        'city_id',
         'region',
-        'isPopular'
+        'is_popular'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
-        'isPopular' => 'boolean',
+        'is_popular' => 'boolean',
     ];
 
-    /**
-     * Get the city that owns the location.
-     */
-    public function city(): BelongsTo
-    {
-        return $this->belongsTo(City::class, 'city_id', 'id');
-    }
+    public function city()
+{
+    return $this->belongsTo(City::class);
+}
+
+public function country()
+{
+    return $this->belongsTo(Country::class);
+}
 }

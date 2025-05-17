@@ -44,20 +44,7 @@ class TourBookingResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Hidden::make('tour_id')
-                ->default(fn () => \App\Models\Tour::where('admin_id', auth()->id())->value('id')),
-                
-                Forms\Components\Hidden::make('schedule_id')
-                ->default(fn () => \App\Models\TourSchedule::where('admin_id', auth()->id())->value('id')),
-                
-                Forms\Components\TextInput::make('numberOfAdults')
-                    ->required()
-                    ->numeric()
-                    ->default(1),
-                Forms\Components\TextInput::make('numberOfChildren')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
+               
             ]);
     }
 
@@ -73,16 +60,16 @@ class TourBookingResource extends Resource
                     ->formatStateUsing(fn ($state, $record) =>
                         $record->tour->activities->pluck('name')->join(', ')
                     ),
-                Tables\Columns\TextColumn::make('user.firstName')
+                Tables\Columns\TextColumn::make('user.first_name')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('cost')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('numberOfAdults')
+                Tables\Columns\TextColumn::make('number_of_adults')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('numberOfChildren')
+                Tables\Columns\TextColumn::make('number_of_children')
                     ->numeric()
                     ->sortable(),
             ])
@@ -105,6 +92,10 @@ class TourBookingResource extends Resource
         return [
             //
         ];
+    }
+    public static function canCreate(): bool
+    {
+        return false; 
     }
 
     public static function getPages(): array

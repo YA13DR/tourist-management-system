@@ -11,38 +11,18 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Booking extends Model
 {
     use HasFactory;
-
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'Bookings';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'bookingReference',
+        'booking_reference',
         'user_id',
-        'bookingType',
-        'bookingDate',
+        'booking_type',
+        'booking_date',
         'status',
-        'totalPrice',
-        'discountAmount',
-        'paymentStatus',
-        'specialRequests',
-        'cancellationReason',
-        'lastUpdated'
+        'total_price',
+        'discount_amount',
+        'payment_status',
+        'special_requests',
+        'cancellation_reason',
+        'last_updated'
     ];
 
     /**
@@ -51,55 +31,37 @@ class Booking extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'bookingDate' => 'datetime',
-        'lastUpdated' => 'datetime',
-        'totalPrice' => 'decimal:2',
-        'discountAmount' => 'decimal:2',
+        'booking_date' => 'datetime',
+        'last_updated' => 'datetime',
+        'total_price' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
     ];
 
-    /**
-     * Get the user that owns the booking.
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
-    /**
-     * Get the tour booking for the booking.
-     */
     public function tourBooking(): HasOne
     {
         return $this->hasOne(TourBooking::class, 'booking_id', 'id');
     }
 
-    /**
-     * Get the hotel booking for the booking.
-     */
     public function hotelBooking(): HasOne
     {
         return $this->hasOne(HotelBooking::class, 'booking_id', 'id');
     }
 
-    /**
-     * Get the restaurant booking for the booking.
-     */
     public function restaurantBooking(): HasOne
     {
         return $this->hasOne(RestaurantBooking::class, 'booking_id', 'id');
     }
 
-    /**
-     * Get the taxi booking for the booking.
-     */
     public function taxiBooking(): HasOne
     {
         return $this->hasOne(TaxiBooking::class, 'booking_id', 'id');
     }
 
-    /**
-     * Get the package booking for the booking.
-     */
     public function packageBooking(): HasOne
     {
         return $this->hasOne(PackageBooking::class, 'booking_id', 'id');
@@ -108,17 +70,11 @@ class Booking extends Model
     {
         return $this->hasOne(TravelBooking::class, 'booking_id');
     }
-    /**
-     * Get the payments for the booking.
-     */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class, 'booking_id', 'id');
     }
 
-    /**
-     * Get the ratings for the booking.
-     */
     public function ratings(): HasMany
     {
         return $this->hasMany(Rating::class, 'booking_id', 'id');

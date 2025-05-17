@@ -22,9 +22,9 @@ class RestaurantBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'numberOfGuests' => 'required|integer|min:1',
-            'reservationDate' => 'required|date|after_or_equal:today',
-            'reservationTime' => 'required|date_format:H:i:s',
+            'number_of_guests' => 'required|integer|min:1',
+            'reservation_date' => 'required|date|after_or_equal:today',
+            'reservation_time' => 'required|date_format:H:i:s',
         ];
     }
 }

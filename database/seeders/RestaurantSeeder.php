@@ -18,39 +18,37 @@ class RestaurantSeeder extends Seeder
             'name' => 'Al-Fakher Restaurant',
             'description' => 'A luxury restaurant offering a variety of dishes with excellent service.',
             'location_id' => 1, 
-            'Latitude' => 24.7136,
-            'Longitude' => 46.6753,
             'cuisine' => 'Saudi Cuisine',
-            'priceRange' => 3,
-            'openingTime' => '10:00:00',
-            'closingTime' => '23:00:00',
-            'averageRating' => 4.5,
-            'totalRatings' => 150,
-            'mainImageURL' => 'path/to/image.jpg',
+            'price_range' => 3,
+            'opening_time' => '10:00:00',
+            'closing_time' => '23:00:00',
+            'average_rating' => 4.5,
+            'total_ratings' => 150,
+            'main_image' => 'path/to/image.jpg',
             'website' => 'https://restaurant-website.com',
             'phone' => '+966123456789',
             'email' => 'info@restaurant.com',
             'max_tables' => 50,
             'cost' => 100.00,
-            'isActive' => true,
-            'isFeatured' => true,
+            'is_active' => true,
+            'is_featured' => true,
             'admin_id' => 3, 
         ]);
 
         RestaurantImage::create([
             'restaurant_id' => $restaurant->id,
-            'imageURL' => 'path/to/restaurant_image_1.jpg',
-            'displayOrder' => 1,
+            'image' => 'path/to/restaurant_image_1.jpg',
+            'display_order' => 1,
             'caption' => 'Exterior view of the restaurant',
-            'isActive' => true,
+            'is_active' => true,
         ]);
 
         $category = MenuCategory::create([
             'restaurant_id' => $restaurant->id,
             'name' => 'Appetizers',
             'description' => 'Various appetizers',
-            'displayOrder' => 1,
-            'isActive' => true,
+            'display_order' => 1,
+            'is_active' => true,
         ]);
 
         MenuItem::create([
@@ -58,13 +56,13 @@ class RestaurantSeeder extends Seeder
             'name' => 'Mutabal',
             'description' => 'Fresh appetizers with tahini and olive oil.',
             'price' => 25.00,
-            'isVegetarian' => true,
-            'isVegan' => true,
-            'isGlutenFree' => false,
-            'spiciness' => 0,
-            'imageURL' => 'path/to/item_image_1.jpg',
-            'isActive' => true,
-            'isFeatured' => false,
+            'is_vegetarian' => true,
+            'is_vegan' => true,
+            'is_gluten_free' => false,
+            'spiciness' => 'mild',
+            'image' => 'path/to/item_image_1.jpg',
+            'is_active' => true,
+            'is_featured' => false,
         ]);
 
         RestaurantTable::create([
@@ -72,7 +70,7 @@ class RestaurantSeeder extends Seeder
             'number' => 'T1',
             'cost' => 100,
             'location' => 'Indoor',
-            'isActive' => true,
+            'is_active' => true,
         ]);
     }
 }

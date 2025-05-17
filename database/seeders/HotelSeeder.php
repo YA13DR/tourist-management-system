@@ -20,18 +20,19 @@ class HotelSeeder extends Seeder
         $hotel = Hotel::create([
             'name' => 'Grand Palace Hotel',
             'description' => 'A luxurious hotel in the heart of the city.',
+            'location_id'=>1,
             'discount' => 10,
-            'starRating' => 5,
-            'checkInTime' => '14:00:00',
-            'checkOutTime' => '12:00:00',
-            'averageRating' => 4.7,
-            'totalRatings' => 124,
-            'mainImageURL' => 'images/hotels/grand-palace.jpg',
+            'star_rating' => 5,
+            'checkIn_time' => '14:00:00',
+            'checkOut_time' => '12:00:00',
+            'average_rating' => 4.7,
+            'total_ratings' => 124,
+            'main_image' => 'images/hotels/grand-palace.jpg',
             'website' => 'https://grandpalace.com',
             'phone' => '+1 234 567 8900',
             'email' => 'contact@grandpalace.com',
-            'isActive' => true,
-            'isFeatured' => true,
+            'is_active' => true,
+            'is_featured' => true,
             'admin_id' => 5,
         ]);
 
@@ -40,37 +41,38 @@ class HotelSeeder extends Seeder
             'name' => 'Deluxe King Room',
             'number' => 20,
             'description' => 'Spacious room with king-sized bed.',
-            'maxOccupancy' => 2,
-            'basePrice' => 200.00,
-            'discountPercentage' => 15.00,
+            'max_occupancy' => 2,
+            'base_price' => 200.00,
+            'discount_percentage' => 15.00,
             'size' => '35 sqm',
-            'bedType' => 'King',
-            'imageURL' => 'images/rooms/deluxe-king.jpg',
-            'isActive' => true,
+            'bed_type' => 'King',
+            'image' => 'images/rooms/deluxe-king.jpg',
+            'is_active' => true,
         ]);
 
         foreach (range(0, 6) as $offset) {
             RoomAvailability::create([
                 'roomType_id' => $roomType->id,
                 'date' => now()->addDays($offset)->toDateString(),
-                'availableRooms' => 10,
+                'available_rooms' => 10,
                 'price' => 180.00,
-                'isBlocked' => false,
+                'is_blocked' => false,
             ]);
         }
+
         $amenities = [
-            ['name' => 'Free Wi-Fi', 'iconURL' => 'icons/wifi.png'],
-            ['name' => 'Swimming Pool', 'iconURL' => 'icons/pool.png'],
-            ['name' => 'Gym', 'iconURL' => 'icons/gym.png'],
-            ['name' => 'Spa', 'iconURL' => 'icons/spa.png'],
-            ['name' => 'Airport Shuttle', 'iconURL' => 'icons/shuttle.png'],
+            ['name' => 'Free Wi-Fi', 'icon' => 'icons/wifi.png'],
+            ['name' => 'Swimming Pool', 'icon' => 'icons/pool.png'],
+            ['name' => 'Gym', 'icon' => 'icons/gym.png'],
+            ['name' => 'Spa', 'icon' => 'icons/spa.png'],
+            ['name' => 'Airport Shuttle', 'icon' => 'icons/shuttle.png'],
         ];
 
         foreach ($amenities as $item) {
             $amenity = HotelAmenity::create([
                 'name' => $item['name'],
-                'iconURL' => $item['iconURL'],
-                'isActive' => true,
+                'icon' => $item['icon'],
+                'is_active' => true,
             ]);
 
             HotelAmenityMap::create([

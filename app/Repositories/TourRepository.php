@@ -37,7 +37,7 @@ class TourRepository implements TourInterface
                 ])->exists();
             }
             $now = now();
-        $promotion = Promotion::where('isActive', true)
+        $promotion = Promotion::where('is_active', true)
             ->where('start_date', '<=', $now)
             ->where('end_date', '>=', $now)
             ->where('applicable_type', 1) 
@@ -78,7 +78,7 @@ class TourRepository implements TourInterface
                 ])->exists();
             }
             $now = now();
-            $promotion = Promotion::where('isActive', true)
+            $promotion = Promotion::where('is_active', true)
                 ->where('start_date', '<=', $now)
                 ->where('end_date', '>=', $now)
                 ->where('applicable_type', 1) 
@@ -97,60 +97,6 @@ class TourRepository implements TourInterface
         ]);
     }
 
-    public function bookTourWithPromo($id,TourBookingRequest $request){
-        $tour = Tour::find($id);
-
-        if (!$tour) {
-            return $this->error('tour not found', 404);
-        }
-        $schedule = $tour->schedules()->where('isActive', true)->first();
-
-        if (!$schedule) {
-            return $this->error('No active schedule found for this tour.', 404);
-        }
-        $now = Carbon::now();
-        $startDate = Carbon::parse($schedule->startDate);
-    
-        if ($now->greaterThanOrEqualTo($startDate->subDay())) {
-            return $this->error('Booking must be made at least one day before the tour start date.', 400);
-        }
-        $existingBookings = TourBooking::where('tour_id', $tour->id)->sum(DB::raw('numberOfAdults + numberOfChildren'));
-
-        $newBookingCount = $request->numberOfAdults + $request->numberOfChildren;
-        $totalAfterBooking = $existingBookings + $newBookingCount;
-        if ($totalAfterBooking > $tour->maxCapacity) {
-            return $this->error('Cannot book: capacity exceeded.', 400);
-        }
-        $bookingReference = 'TB-' . strtoupper(uniqid());
-        $totalCost = $tour->basePrice * $newBookingCount;
-    
-        $booking = Booking::create([
-            'bookingReference' => $bookingReference,
-            'user_id' => auth('sanctum')->id(),
-            'bookingType' => 1, 
-            'totalPrice' => $totalCost,
-            'paymentStatus' => 1, 
-        ]);
-        $tourReservation = TourBooking::create([
-            'user_id' => auth('sanctum')->id(),
-            'tour_id' => $tour->id,
-            'schedule_id' => $schedule->id,
-            'numberOfAdults' => $request->numberOfAdults,
-            'numberOfChildren' => $request->numberOfChildren,
-            'booking_id' => $booking->id,
-            'cost' =>$tour->basePrice * ($request->numberOfAdults+ $request->numberOfChildren), 
-        ]);
-        $this->addPointsFromAction(auth('sanctum')->user(), 'book_tour', $newBookingCount);
-
-
-        return $this->success('Table reserved successfully', [
-            'bookingReference' => $booking->bookingReference,
-            'reservation_id' => $tourReservation->id,
-            'tour' => $tourReservation->tour_id,
-            'schedule' => $tourReservation->schedule_id,
-            'cost' => $tourReservation->cost,
-        ]);
-    }
     public function bookTourByPoint($id,TourBookingRequest $request){
         $tour = Tour::find($id);
 
@@ -158,26 +104,26 @@ class TourRepository implements TourInterface
             return $this->error('Tour not found', 404);
         }
 
-        $schedule = $tour->schedules()->where('isActive', true)->first();
+        $schedule = $tour->schedules()->where('is_active', true)->first();
 
         if (!$schedule) {
             return $this->error('No active schedule found for this tour.', 404);
         }
 
         $now = Carbon::now();
-        $startDate = Carbon::parse($schedule->startDate);
+        $startDate = Carbon::parse($schedule->start_date);
 
         if ($now->greaterThanOrEqualTo($startDate->subDay())) {
             return $this->error('Booking must be made at least one day before the tour start date.', 400);
         }
 
         $existingBookings = TourBooking::where('tour_id', $tour->id)
-            ->sum(DB::raw('numberOfAdults + numberOfChildren'));
+            ->sum(DB::raw('number_of_adults + number_of_children'));
 
-        $newBookingCount = $request->numberOfAdults + $request->numberOfChildren;
+        $newBookingCount = $request->number_of_adults + $request->number_of_children;
         $totalAfterBooking = $existingBookings + $newBookingCount;
 
-        if ($totalAfterBooking > $tour->maxCapacity) {
+        if ($totalAfterBooking > $tour->max_capacity) {
             return $this->error('Cannot book: capacity exceeded.', 400);
         }
 
@@ -191,19 +137,19 @@ class TourRepository implements TourInterface
             return $this->error('You do not have enough reward points to book this tour. Minimum required: ' . ($rule->required_points ?? 'N/A'), 403);
         }
 
-        $originalCost = $tour->basePrice * $newBookingCount;
+        $originalCost = $tour->base_price * $newBookingCount;
         $discountAmount = $originalCost * ($rule->discount_percentage / 100);
         $totalCost = $originalCost - $discountAmount;
 
         $bookingReference = 'TB-' . strtoupper(uniqid());
         $booking = Booking::create([
-            'bookingReference' => $bookingReference,
+            'booking_reference' => $bookingReference,
             'user_id' => $user->id,
-            'bookingType' => 1,
-            'totalPrice' => $totalCost,
-            'discountAmount' => $discountAmount,
-            'paymentStatus' => 1,
-            'bookingDate' => now(), 
+            'booking_type' => 1,
+            'total_price' => $totalCost,
+            'discount_amount' => $discountAmount,
+            'payment_status' => 1,
+            'booking_date' => now(), 
             'status' => 'confirmed',
         ]);
 
@@ -211,8 +157,8 @@ class TourRepository implements TourInterface
             'user_id' => $user->id,
             'tour_id' => $tour->id,
             'schedule_id' => $schedule->id,
-            'numberOfAdults' => $request->numberOfAdults,
-            'numberOfChildren' => $request->numberOfChildren,
+            'number_of_adults' => $request->number_of_adults,
+            'number_of_children' => $request->number_of_children,
             'booking_id' => $booking->id,
             'cost' => $totalCost,
         ]);
@@ -221,7 +167,7 @@ class TourRepository implements TourInterface
         $userRank->save();
 
         return $this->success('Tour booked successfully with discount applied.', [
-            'bookingReference' => $booking->bookingReference,
+            'booking_reference' => $booking->booking_reference,
             'reservation_id' => $tourReservation->id,
             'tour' => $tourReservation->tour_id,
             'schedule' => $tourReservation->schedule_id,
@@ -238,37 +184,37 @@ class TourRepository implements TourInterface
             return $this->error('Tour not found', 404);
         }
 
-        $schedule = $tour->schedules()->where('isActive', true)->first();
+        $schedule = $tour->schedules()->where('is_active', true)->first();
 
         if (!$schedule) {
             return $this->error('No active schedule found for this tour.', 404);
         }
 
         $now = Carbon::now();
-        $startDate = Carbon::parse($schedule->startDate);
+        $startDate = Carbon::parse($schedule->start_date);
 
         if ($now->greaterThanOrEqualTo($startDate->subDay())) {
             return $this->error('Booking must be made at least one day before the tour start date.', 400);
         }
 
-        $existingBookings = TourBooking::where('tour_id', $tour->id)->sum(DB::raw('numberOfAdults + numberOfChildren'));
+        $existingBookings = TourBooking::where('tour_id', $tour->id)->sum(DB::raw('number_of_adults + number_of_children'));
 
-        $newBookingCount = $request->numberOfAdults + $request->numberOfChildren;
+        $newBookingCount = $request->number_of_adults + $request->number_of_children;
         $totalAfterBooking = $existingBookings + $newBookingCount;
 
-        if ($totalAfterBooking > $tour->maxCapacity) {
+        if ($totalAfterBooking > $tour->max_capacity) {
             return $this->error('Cannot book: capacity exceeded.', 400);
         }
 
         $bookingReference = 'TB-' . strtoupper(uniqid());
-        $totalCost = $tour->basePrice * $newBookingCount;
+        $totalCost = $tour->base_price * $newBookingCount;
 
         $promotion = null;
         $promotionCode = $request->promotion_code;
 
         if ($promotionCode) {
             $promotion = Promotion::where('promotion_code', $promotionCode)
-                ->where('isActive', true)
+                ->where('is_active', true)
                 ->where('start_date', '<=', now())
                 ->where('end_date', '>=', now())
                 ->where(function ($q) {
@@ -302,11 +248,11 @@ class TourRepository implements TourInterface
         $totalCostAfterDiscount = $totalCost - $discountAmount;
 
         $booking = Booking::create([
-            'bookingReference' => $bookingReference,
+            'booking_reference' => $bookingReference,
             'user_id' => auth('sanctum')->id(),
-            'bookingType' => 1,
-            'totalPrice' => $totalCostAfterDiscount,
-            'paymentStatus' => 1, 
+            'booking_type' => 1,
+            'total_price' => $totalCostAfterDiscount,
+            'payment_status' => 1, 
         ]);
 
         if (!$booking) {
@@ -317,8 +263,8 @@ class TourRepository implements TourInterface
             'user_id' => auth('sanctum')->id(),
             'tour_id' => $tour->id,
             'schedule_id' => $schedule->id,
-            'numberOfAdults' => $request->numberOfAdults,
-            'numberOfChildren' => $request->numberOfChildren,
+            'number_of_adults' => $request->number_of_adults,
+            'number_of_children' => $request->number_of_children,
             'booking_id' => $booking->id,
             'cost' => $totalCostAfterDiscount,
         ]);
@@ -330,12 +276,12 @@ class TourRepository implements TourInterface
         $this->addPointsFromAction(auth('sanctum')->user(), 'book_tour', $newBookingCount);
 
         return $this->success('Tour booked successfully', [
-            'bookingReference' => $booking->bookingReference,
+            'booking_reference' => $booking->booking_reference,
             'reservation_id' => $tourReservation->id,
             'tour' => $tourReservation->tour_id,
             'schedule' => $tourReservation->schedule_id,
             'cost' => $tourReservation->cost,
-            'discountAmount' => $discountAmount,
+            'discount_amount' => $discountAmount,
         ]);
     }
 

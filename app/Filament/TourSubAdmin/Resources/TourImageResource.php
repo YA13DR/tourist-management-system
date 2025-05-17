@@ -50,19 +50,19 @@ class TourImageResource extends Resource
                 Forms\Components\Hidden::make('tour_id')
                 ->default(fn () => \App\Models\Tour::where('admin_id', auth()->id())->value('id')),
                 
-                FileUpload::make('imageURL')
+                FileUpload::make('image')
                     ->label('Tour Image')
                     ->image()
                     ->directory('tour_images') 
                     ->visibility('public'),
-                Forms\Components\TextInput::make('DisplayOrder')
+                Forms\Components\TextInput::make('Display_order')
                     ->required()
                     ->numeric()
                     ->default(0),
                 Forms\Components\TextInput::make('caption')
                     ->maxLength(255)
                     ->default(null),
-                Forms\Components\Toggle::make('isActive')
+                Forms\Components\Toggle::make('is_active')
                     ->required(),
             ]);
     }
@@ -73,17 +73,17 @@ class TourImageResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('tour.name')
                     ->sortable(),
-                ImageColumn::make('imageURL')
+                ImageColumn::make('image')
                     ->label('Image')
-                    ->getStateUsing(fn ($record) => asset('images/'.$record->imageURL) ) 
+                    ->getStateUsing(fn ($record) => asset('images/'.$record->image) ) 
                     ->height(50)
                     ->width(50),
-                Tables\Columns\TextColumn::make('displayOrder')
+                Tables\Columns\TextColumn::make('display_order')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('caption')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('isActive')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])
             ->filters([

@@ -14,13 +14,13 @@ return new class extends Migration
         // Payments table
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_id')->constrained('Bookings', 'id');
-            $table->string('payment_reference')->unique()->notNull();
-            $table->decimal('amount', 10, 2)->notNull();
-            $table->dateTime('paymentDate')->default(now());
-            $table->integer('paymentMethod')->notNull()->comment('1=Credit Card, 2=PayPal, 3=Bank Transfer');
+            $table->foreignId('booking_id')->constrained('bookings');
+            $table->string('payment_reference')->unique();
+            $table->decimal('amount', 10, 2);
+            $table->dateTime('payment_date')->default(now());
+            $table->enum('payment_method', ['credit_card', 'paypal', 'bank_transfer']);
             $table->string('transaction_id')->nullable();
-            $table->integer('status')->default(1)->comment('1=Pending, 2=Success, 3=Failed, 4=Refunded');
+            $table->enum('status', ['pending', 'success', 'failed', 'refunded'])->default('pending');
             $table->text('gateway_response')->nullable();
             $table->decimal('refund_amount', 10, 2)->default(0);
             $table->dateTime('refund_date')->nullable();
@@ -31,46 +31,46 @@ return new class extends Migration
         // Ratings table
         Schema::create('ratings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users', 'id');
-            $table->integer('rating_type')->notNull()->comment('1=Tour, 2=Hotel, 3=Taxi, 4=Restaurant, 5=Package, 6=Guide, 7=Driver');
-            $table->integer('entity_id')->notNull()->comment('tour_id, hotel_id, taxiService_id, restaurant_id, package_id, guide_id, driver_id');
-            $table->integer('rating')->notNull();
+            $table->foreignId('user_id')->constrained('users');
+            $table->enum('rating_type', ['tour', 'hotel', 'taxi', 'restaurant', 'package', 'guide', 'driver']);
+            $table->unsignedBigInteger('entity_id');
+            $table->unsignedTinyInteger('rating');
             $table->text('comment')->nullable();
-            $table->dateTime('ratingdate')->default(now());
-            $table->boolean('isVisible')->default(true);
+            $table->dateTime('rating_date')->default(now());
+            $table->boolean('is_visible')->default(true);
             $table->text('admin_response')->nullable();
-            $table->unique(['user_id','rating_type']);
+            $table->unique(['user_id', 'rating_type']);
             $table->timestamps();
         });
 
         // Feedback table
         Schema::create('feedback', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users', 'id');
-            $table->text('feedback_text')->notNull();
+            $table->foreignId('user_id')->nullable()->constrained('users');
+            $table->text('feedback_text');
             $table->dateTime('feedback_date')->default(now());
-            $table->integer('feedback_type')->notNull()->comment('1=App, 2=Service, 3=Other');
-            $table->integer('status')->default(1)->comment('1=Unread, 2=Read, 3=Responded');
+            $table->enum('feedback_type', ['app', 'service', 'other']);
+            $table->enum('status', ['unread', 'read', 'responded'])->default('unread');
             $table->text('response_text')->nullable();
             $table->dateTime('response_date')->nullable();
-            $table->foreignId('responded_by')->nullable()->constrained('users', 'id');
+            $table->foreignId('responded_by')->nullable()->constrained('users');
             $table->timestamps();
         });
 
         // Promotions table
         Schema::create('promotions', function (Blueprint $table) {
             $table->id();
-            $table->string('promotion_code')->unique()->notNull();
+            $table->string('promotion_code')->unique();
             $table->text('description')->nullable();
-            $table->integer('discount_type')->notNull()->comment('1=Percentage, 2=Fixed Amount');
-            $table->decimal('discount_value', 10, 2)->notNull();
+            $table->enum('discount_type', ['percentage', 'fixed']);
+            $table->decimal('discount_value', 10, 2);
             $table->decimal('minimum_purchase', 10, 2)->default(0);
-            $table->dateTime('start_date')->notNull();
-            $table->dateTime('end_date')->notNull();
+            $table->dateTime('start_date');
+            $table->dateTime('end_date');
             $table->integer('usage_limit')->nullable();
             $table->integer('current_usage')->default(0);
-            $table->integer('applicable_type')->nullable()->comment('1=All, 2=Tour, 3=Hotel, 4=Taxi, 5=Restaurant, 6=Package ,7=Flight');
-            $table->boolean('isActive')->default(true);
+            $table->enum('applicable_type', ['all', 'tour', 'hotel', 'taxi', 'restaurant', 'package', 'flight'])->nullable();
+            $table->boolean('is_active')->default(true);
             $table->unsignedBigInteger('created_by')->constrained('admins', 'id');
             $table->timestamps();
         });
@@ -94,31 +94,31 @@ return new class extends Migration
        
         Schema::create('point_rules', function (Blueprint $table) {
             $table->id();
-            $table->string('action'); 
+            $table->enum('action', ['book_flight', 'book_tour', 'book_hotel', 'add_restaurant_order', 'book_restaurant']);
             $table->integer('points'); 
             $table->timestamps();
         });
         Schema::create('discount_points', function (Blueprint $table) {
             $table->id();
-            $table->enum('action', ['book_flight', 'book_tour', 'book_hotel','add_restaurant_order', 'book_restaurant']);
+            $table->enum('action', ['book_flight', 'book_tour', 'book_hotel', 'add_restaurant_order', 'book_restaurant']);
             $table->integer('required_points');
-            $table->decimal('discount_percentage', 5, 2); 
+            $table->decimal('discount_percentage', 5, 2);
             $table->timestamps();
         });
         
         // Wishlist table
         Schema::create('wishlist', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users', 'id');
-            $table->integer('item_type')->notNull()->comment('1=Tour, 2=Hotel, 3=Restaurant, 4=Package');
-            $table->integer('item_id')->notNull();
+            $table->foreignId('user_id')->constrained('users');
+            $table->enum('item_type', ['tour', 'hotel', 'restaurant', 'package']);
+            $table->unsignedBigInteger('item_id');
             $table->dateTime('added_date')->default(now());
             $table->unique(['user_id', 'item_type', 'item_id']);
             $table->timestamps();
         });
 
         // Audit Log table
-        Schema::create('auditLog', function (Blueprint $table) {
+        Schema::create('audit_log', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users', 'id');
             $table->string('entity_type')->notNull();
@@ -131,20 +131,20 @@ return new class extends Migration
             $table->timestamps();
         });
         // Tour Translations table
-        Schema::create('TourTranslations', function (Blueprint $table) {
+        Schema::create('tour_translations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tour_id')->constrained('Tours', 'id');
-            $table->string('languageCode');
-            $table->text('translatedDescription');
+            $table->foreignId('tour_id')->constrained('tours');
+            $table->string('language_code');
+            $table->text('translated_description');
             $table->timestamps();
         });
 
         // Partnerships table
         Schema::create('partnerships', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('admin_id')->nullable()->constrained('users', 'id');
-            $table->foreignId('hotel_id')->nullable()->constrained('Hotels', 'id');
-            $table->foreignId('restaurant_id')->nullable()->constrained('Restaurants', 'id');
+            $table->foreignId('admin_id')->nullable()->constrained('users');
+            $table->foreignId('hotel_id')->nullable()->constrained('hotels');
+            $table->foreignId('restaurant_id')->nullable()->constrained('restaurants');
             $table->foreignId('taxiService_id')->nullable()->constrained('TaxiServices', 'TaxiServiceID');
             $table->decimal('discount_percentage', 5, 2)->nullable();
             $table->timestamps();
@@ -156,16 +156,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('Partnerships');
-        Schema::dropIfExists('TourTranslations');
-        Schema::dropIfExists('UserRanks');
-        Schema::dropIfExists('AuditLog');
-        Schema::dropIfExists('UserSessions');
-        Schema::dropIfExists('Notifications');
-        Schema::dropIfExists('Wishlist');
-        Schema::dropIfExists('Promotions');
-        Schema::dropIfExists('Feedback');
-        Schema::dropIfExists('Ratings');
-        Schema::dropIfExists('Payments');
+        Schema::dropIfExists('partnerships');
+        Schema::dropIfExists('tour_translations');
+        Schema::dropIfExists('user_ranks');
+        Schema::dropIfExists('audit_log');
+        Schema::dropIfExists('wishlist');
+        Schema::dropIfExists('promotions');
+        Schema::dropIfExists('feedback');
+        Schema::dropIfExists('ratings');
+        Schema::dropIfExists('payments');
     }
 };

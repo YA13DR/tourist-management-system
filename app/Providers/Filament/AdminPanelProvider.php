@@ -45,7 +45,13 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
-            
+            ->resources([
+                \App\Filament\HotelAdmin\Resources\HotelResource::class,
+                \App\Filament\RestaurantAdmin\Resources\RestaurantResource::class,
+                \App\Filament\TourAdmin\Resources\TourResource::class,
+                \App\Filament\TravelAdmin\Resources\TravelAgencyResource::class,
+                \App\Filament\Resources\LocationResource::class,
+            ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,

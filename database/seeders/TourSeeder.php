@@ -21,36 +21,36 @@ class TourSeeder extends Seeder
         $category1 = TourCategory::create([
             'name' => 'Adventure',
             'description' => 'Exciting and adventurous tours for thrill seekers.',
-            'iconURL' => 'adventure_icon.png',
-            'isActive' => true,
+            'icon' => 'adventure_icon.png',
+            'is_active' => true,
         ]);
         $tour1 = Tour::create([
             'name' => 'Mountain Adventure',
             'description' => 'A thrilling mountain trekking experience.',
-            'shortDescription' => 'A challenging trek through the mountains.',
+            'short_description' => 'A challenging trek through the mountains.',
             'location_id' => 1, 
-            'durationHours' => 8.5,
-            'durationDays' => 1,
-            'basePrice' => 150.00,
-            'discountPercentage' => 10,
-            'maxCapacity' => 20,
-            'minParticipants' => 5,
-            'difficultyLevel' => 3,
-            'averageRating' => 4.5,
-            'totalRatings' => 100,
-            'isActive' => true,
-            'isFeatured' => true,
+            'duration_hours' => 8.5,
+            'duration_days' => 1,
+            'base_price' => 150.00,
+            'discount_percentage' => 10,
+            'max_capacity' => 20,
+            'min_participants' => 5,
+            'difficulty_level' => 3,
+            'average_rating' => 4.5,
+            'total_ratings' => 100,
+            'is_active' => true,
+            'is_featured' => true,
             'admin_id' => 7,
         ]);
 
         $schedule1 = TourSchedule::create([
             'tour_id' => $tour1->id,
-            'startDate' => '2025-06-01',
-            'endDate' => '2025-06-01',
-            'startTime' => '08:00:00',
-            'availableSpots' => 20,
+            'start_date' => '2025-06-01',
+            'end_date' => '2025-06-01',
+            'start_time' => '08:00:00',
+            'available_spots' => 20,
             'price' => 150.00,
-            'isActive' => true,
+            'is_active' => true,
         ]);
         $activity1 = Activity::create([
             'name' => 'Hiking',
@@ -65,10 +65,10 @@ class TourSeeder extends Seeder
         TourActivity::create([
             'schedule_id' => $schedule1->id,
             'activity_id' => $activity1->id,
-            'isActive' => true,
+            'is_active' => true,
         ]);
 
-        DB::table('TourCategoryMapping')->insert([
+        DB::table('tour_category_mapping')->insert([
             ['tour_id' => $tour1->id, 'category_id' => $category1->id],
         ]);
     }

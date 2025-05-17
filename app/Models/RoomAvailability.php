@@ -10,50 +10,22 @@ class RoomAvailability extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'RoomAvailability';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'roomType_id',
+        'room_type_id',
         'date',
-        'availableRooms',
+        'available_rooms',
         'price',
-        'isBlocked'
+        'is_blocked'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'date' => 'date',
         'price' => 'decimal:2',
-        'isBlocked' => 'boolean',
+        'is_blocked' => 'boolean',
     ];
 
-    /**
-     * Get the room type that owns the availability.
-     */
     public function roomType(): BelongsTo
     {
-        return $this->belongsTo(RoomType::class, 'RoomTypeID', 'id');
+        return $this->belongsTo(RoomType::class, 'room_type_id', 'id');
     }
 }

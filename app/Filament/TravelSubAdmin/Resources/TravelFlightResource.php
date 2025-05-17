@@ -67,13 +67,11 @@ class TravelFlightResource extends Resource
             
             Forms\Components\DateTimePicker::make('departure_time')
                 ->label('Departure Time')
-                ->required()
-                ->withoutTime(),
+                ->required(),
             
                 Forms\Components\DateTimePicker::make('arrival_time')
                 ->label('Arrival Time')
-                ->required()
-                ->withoutTime(),
+                ->required(),
 
                 Forms\Components\TextInput::make('duration_minutes')
                 ->label('Duration (minutes)')

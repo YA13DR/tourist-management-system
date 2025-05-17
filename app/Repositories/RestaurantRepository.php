@@ -49,7 +49,7 @@ class RestaurantRepository implements RestaurantInterface
                 ])->exists();
             }
             $now = now();
-            $promotion = Promotion::where('isActive', true)
+            $promotion = Promotion::where('is_active', true)
                 ->where('start_date', '<=', $now)
                 ->where('end_date', '>=', $now)
                 ->where('applicable_type', 5) 
@@ -98,7 +98,7 @@ class RestaurantRepository implements RestaurantInterface
                 ])->exists();
             }
             $now = now();
-            $promotion = Promotion::where('isActive', true)
+            $promotion = Promotion::where('is_active', true)
                 ->where('start_date', '<=', $now)
                 ->where('end_date', '>=', $now)
                 ->where('applicable_type', 5) 
@@ -162,66 +162,6 @@ class RestaurantRepository implements RestaurantInterface
             'menu_item' => $menuItem,
         ]);
     }
-    public function bookTableWithPromotion($id,RestaurantBookingRequest $request){
-        $restaurant = Restaurant::find($id);
-
-        if (!$restaurant) {
-            return $this->error('Restaurant not found', 404);
-        }
-        $reservationDate = $request->reservationDate;
-        $reservationTime = $request->reservationTime;
-        
-        $maxTables = $restaurant->max_tables;
-        
-        $countReservations = RestaurantBooking::where('restaurant_id', $restaurant->id)
-            ->where('reservationDate', $reservationDate)
-            ->count();
-        
-        if ($countReservations >= $maxTables) {
-            return $this->error('No tables available for this date', 400);
-        }
-        $bookingReference = 'RB-' . strtoupper(uniqid());
-        $discount = $restaurant->discount ?? 0;  
-        
-        $totalPrice = $restaurant->cost;  
-
-        $discountAmount = ($discount > 0) ? ($totalPrice * $discount / 100) : 0;
-        $totalPriceAfterDiscount = $totalPrice - $discountAmount;
-
-        $booking = Booking::create([
-            'bookingReference' => $bookingReference,
-            'user_id' => auth('sanctum')->id(),
-            'bookingType' => 4, 
-            'totalPrice' => $totalPriceAfterDiscount,
-            'discountAmount' => $discountAmount,
-            'paymentStatus' => 1,  
-        ]);
-        if (!$booking) {
-            return $this->error('Failed to create booking', 500);
-        }
-        $tableReservation = RestaurantBooking::create([
-            'booking_id'=>$booking->id,
-            'user_id' => auth('sanctum')->id(),
-            'restaurant_id' => $restaurant->id,
-            'table_id' => rand(1, $restaurant->max_tables),
-            'reservationDate' => $reservationDate,
-            'reservationTime' => $reservationTime,
-            'numberOfGuests' => $request->numberOfGuests,
-            'cost' => $totalPriceAfterDiscount, 
-        ]);
-    
-        $this->addPointsFromAction(auth('sanctum')->user(), 'book_restaurant', 1); 
-
-        return $this->success('Table reserved successfully', [
-            'reservation_id' => $tableReservation->id,
-            'date' => $tableReservation->reservationDate,
-            'time' => $tableReservation->reservationTime,
-            'table_id' => $tableReservation->table_id,
-            'cost' => $tableReservation->cost,
-            'bookingReference' => $booking->bookingReference,
-            'discountAmount' => $discountAmount,
-        ]);
-    }
     public function bookTable($id, RestaurantBookingRequest $request)
     {
         $restaurant = Restaurant::find($id);
@@ -230,12 +170,12 @@ class RestaurantRepository implements RestaurantInterface
         return $this->error('Restaurant not found', 404);
     }
 
-    $reservationDate = $request->reservationDate;
-    $reservationTime = $request->reservationTime;
+    $reservationDate = $request->reservation_date;
+    $reservationTime = $request->reservation_time;
 
     $maxTables = $restaurant->max_tables;
     $countReservations = RestaurantBooking::where('restaurant_id', $restaurant->id)
-        ->where('reservationDate', $reservationDate)
+        ->where('reservation_date', $reservationDate)
         ->count();
 
     if ($countReservations >= $maxTables) {
@@ -250,7 +190,7 @@ class RestaurantRepository implements RestaurantInterface
 
     if ($promotionCode) {
         $promotion = Promotion::where('promotion_code', $promotionCode)
-            ->where('isActive', true)
+            ->where('is_active', true)
             ->where('start_date', '<=', now())
             ->where('end_date', '>=', now())
             ->where(function ($q) {
@@ -259,7 +199,7 @@ class RestaurantRepository implements RestaurantInterface
             })
             ->first();
 
-        if (!$promotion || !$promotion->isActive) {
+        if (!$promotion || !$promotion->is_active) {
             return $this->error('Invalid or expired promotion code', 400);
         }
 
@@ -284,12 +224,12 @@ class RestaurantRepository implements RestaurantInterface
     $totalPriceAfterDiscount = $basePrice - $discountAmount;
 
     $booking = Booking::create([
-        'bookingReference' => $bookingReference,
+        'booking_reference' => $bookingReference,
         'user_id' => auth('sanctum')->id(),
-        'bookingType' => 4,
-        'totalPrice' => $totalPriceAfterDiscount,
-        'discountAmount' => $discountAmount,
-        'paymentStatus' => 1,
+        'booking_type' => 4,
+        'total_price' => $totalPriceAfterDiscount,
+        'discount_amount' => $discountAmount,
+        'payment_status' => 1,
     ]);
 
     if (!$booking) {
@@ -301,9 +241,9 @@ class RestaurantRepository implements RestaurantInterface
         'user_id' => auth('sanctum')->id(),
         'restaurant_id' => $restaurant->id,
         'table_id' => rand(1, $restaurant->max_tables),
-        'reservationDate' => $reservationDate,
-        'reservationTime' => $reservationTime,
-        'numberOfGuests' => $request->numberOfGuests,
+        'reservation_date' => $reservationDate,
+        'reservation_time' => $reservationTime,
+        'number_of_guests' => $request->number_of_guests,
         'cost' => $totalPriceAfterDiscount,
     ]);
 
@@ -315,12 +255,12 @@ class RestaurantRepository implements RestaurantInterface
 
     return $this->success('Table reserved successfully', [
         'reservation_id' => $tableReservation->id,
-        'date' => $tableReservation->reservationDate,
-        'time' => $tableReservation->reservationTime,
+        'date' => $tableReservation->reservation_date,
+        'time' => $tableReservation->reservation_time,
         'table_id' => $tableReservation->table_id,
         'cost' => $tableReservation->cost,
-        'bookingReference' => $booking->bookingReference,
-        'discountAmount' => $discountAmount,
+        'booking_reference' => $booking->booking_reference,
+        'discount_amount' => $discountAmount,
     ]);
     }
 
@@ -360,7 +300,7 @@ class RestaurantRepository implements RestaurantInterface
         $booking->save();
 
         if ($booking->booking) {
-            $booking->booking->totalPrice = $booking->cost;
+            $booking->booking->total_price = $booking->cost;
             $booking->booking->save();
         }
         $this->addPointsFromAction(auth('sanctum')->user(), 'add_restaurant_order', count($orderItems));

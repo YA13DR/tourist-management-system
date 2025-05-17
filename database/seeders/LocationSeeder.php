@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\City;
+use App\Models\Country;
 use App\Models\Location;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -16,46 +18,61 @@ class LocationSeeder extends Seeder
         $locations = [
             [
                 'name' => 'Paris',
-                'Latitude' => 48.856613,
-                'Longitude' => 2.352222,
+                'latitude' => 48.856613,
+                'longitude' => 2.352222,
                 'city' => 'Paris',
                 'country' => 'France',
                 'region' => 'Île-de-France',
-                'IsPopular' => true,
+                'is_popular' => true,
             ],
             [
                 'name' => 'New York',
-                'Latitude' => 40.712776,
-                'Longitude' => -74.005974,
+                'latitude' => 40.712776,
+                'longitude' => -74.005974,
                 'city' => 'New York',
                 'country' => 'USA',
                 'region' => 'New York',
-                'IsPopular' => true,
+                'is_popular' => true,
             ],
             [
                 'name' => 'Tokyo',
-                'Latitude' => 35.689487,
-                'Longitude' => 139.691711,
+                'latitude' => 35.689487,
+                'longitude' => 139.691711,
                 'city' => 'Tokyo',
                 'country' => 'Japan',
                 'region' => 'Kantō',
-                'IsPopular' => true,
+                'is_popular' => true,
             ],
             [
                 'name' => 'Cairo',
-                'Latitude' => 30.044420,
-                'Longitude' => 31.235712,
+                'latitude' => 30.044420,
+                'longitude' => 31.235712,
                 'city' => 'Cairo',
                 'country' => 'Egypt',
                 'region' => 'Cairo Governorate',
-                'IsPopular' => true,
+                'is_popular' => true,
             ],
         ];
-
-        foreach ($locations as $location) {
+        
+        foreach ($locations as $data) {
+            $country = Country::firstOrCreate(
+                ['name' => $data['country']],
+                ['code' => strtoupper(substr($data['country'], 0, 2))]
+            );
+        
+            $city = City::firstOrCreate(
+                ['name' => $data['city'], 'country_id' => $country->id]
+            );
+        
             Location::updateOrCreate(
-                ['name' => $location['name']],
-                $location
+                ['name' => $data['name']],
+                [
+                    'latitude'    => $data['latitude'],
+                    'longitude'   => $data['longitude'],
+                    'city_id'     => $city->id,
+                    'region'      => $data['region'],
+                    'is_popular'  => $data['is_popular'] ?? false,
+                ]
             );
         }
     }

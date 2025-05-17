@@ -12,80 +12,78 @@ return new class extends Migration
     public function up(): void
     {
         // Restaurants table
-        Schema::create('Restaurants', function (Blueprint $table) {
+        Schema::create('restaurants', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->notNull();
+            $table->string('name')->unique();
             $table->text('description')->nullable();
             $table->double('discount')->nullable();
-            $table->string('city')->nullable();
-            $table->string('country')->nullable();
-            $table->decimal('Latitude', 10, 7)->nullable();
-            $table->decimal('Longitude', 10, 7)->nullable();
+            $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
             $table->string('cuisine')->nullable();
-            $table->integer('priceRange')->nullable()->comment('1=Inexpensive, 2=Moderate, 3=Expensive, 4=Very Expensive');
-            $table->time('openingTime')->nullable();
-            $table->time('closingTime')->nullable();
-            $table->decimal('averageRating', 3, 2)->default(0);
-            $table->integer('totalRatings')->default(0);
-            $table->string('mainImageURL')->nullable();
+            $table->enum('price_range', ['inexpensive', 'moderate', 'expensive', 'very_expensive'])->nullable();
+            $table->time('opening_time')->nullable();
+            $table->time('closing_time')->nullable();
+            $table->decimal('average_rating', 3, 2)->default(0);
+            $table->integer('total_ratings')->default(0);
+            $table->string('main_image')->nullable();
             $table->string('website')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->integer('max_tables')->nullable();
             $table->float('cost')->nullable();
-            $table->boolean('isActive')->default(true);
-            $table->boolean('isFeatured')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_featured')->default(false);
             $table->unsignedBigInteger('admin_id')->constrained('admins', 'id')->cascadeOnDelete();
             $table->timestamps();
         });
 
         // Restaurant Images table
-        Schema::create('RestaurantImages', function (Blueprint $table) {
+        Schema::create('restaurant_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('restaurant_id')->constrained('Restaurants', 'id');
-            $table->string('imageURL')->notNull();
-            $table->integer('displayOrder')->default(0);
+            $table->foreignId('restaurant_id')->constrained('restaurants', 'id');
+            $table->string('image')->notNull();
+            $table->integer('display_order')->default(0);
             $table->string('caption')->nullable();
-            $table->boolean('isActive')->default(true);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
 
         // Menu Categories table
-        Schema::create('MenuCategories', function (Blueprint $table) {
+        Schema::create('menu_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('restaurant_id')->constrained('Restaurants', 'id');
+            $table->foreignId('restaurant_id')->constrained('restaurants', 'id');
             $table->string('name')->notNull();
             $table->text('description')->nullable();
-            $table->integer('displayOrder')->default(0);
-            $table->boolean('isActive')->default(true);
+            $table->integer('display_order')->default(0);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
 
         // Menu Items table
-        Schema::create('MenuItems', function (Blueprint $table) {
+        Schema::create('menu_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained('MenuCategories', 'id');
+            $table->foreignId('category_id')->constrained('menu_categories', 'id');
             $table->string('name')->notNull();
             $table->text('description')->nullable();
             $table->decimal('price', 10)->notNull();
-            $table->boolean('isVegetarian')->default(false);
-            $table->boolean('isVegan')->default(false);
-            $table->boolean('isGlutenFree')->default(false);
-            $table->integer('spiciness')->nullable()->comment('0=Not Spicy, 1=Mild, 2=Medium, 3=Hot');
-            $table->string('imageURL')->nullable();
-            $table->boolean('isActive')->default(true);
-            $table->boolean('isFeatured')->default(false);
+            $table->enum('size', ['small', 'medium', 'large'])->nullable();
+            $table->boolean('is_vegetarian')->default(false);
+            $table->boolean('is_vegan')->default(false);
+            $table->boolean('is_gluten_free')->default(false);
+            $table->enum('spiciness', ['not_spicy', 'mild', 'medium', 'hot'])->nullable();
+            $table->string('image')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_featured')->default(false);
             $table->timestamps();
         });
 
         // Restaurant Tables table
-        Schema::create('RestaurantTables', function (Blueprint $table) {
+        Schema::create('restaurant_tables', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('restaurant_id')->constrained('Restaurants', 'id');
+            $table->foreignId('restaurant_id')->constrained('restaurants', 'id');
             $table->string('number')->notNull();
             $table->integer('cost')->notNull();
-            $table->string('location')->nullable()->comment('Indoor, Outdoor, Private');
-            $table->boolean('isActive')->default(true);
+            $table->enum('location', ['indoor', 'outdoor', 'private'])->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
@@ -95,10 +93,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('RestaurantTables');
-        Schema::dropIfExists('MenuItems');
-        Schema::dropIfExists('MenuCategories');
-        Schema::dropIfExists('RestaurantImages');
-        Schema::dropIfExists('Restaurants');
+        Schema::dropIfExists('restaurant_tables');
+        Schema::dropIfExists('menu_items');
+        Schema::dropIfExists('menu_categories');
+        Schema::dropIfExists('restaurant_images');
+        Schema::dropIfExists('restaurants');
     }
 };

@@ -48,10 +48,10 @@ class TourTranslationResource extends Resource
                 Forms\Components\Hidden::make('tour_id')
                 ->default(fn () => \App\Models\Tour::where('admin_id', auth()->id())->value('id')),
                 
-                Forms\Components\TextInput::make('languageCode')
+                Forms\Components\TextInput::make('language_code')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('translatedDescription')
+                Forms\Components\Textarea::make('translated_description')
                     ->required()
                     ->columnSpanFull(),
             ]);
@@ -64,9 +64,9 @@ class TourTranslationResource extends Resource
                 Tables\Columns\TextColumn::make('tour.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('languageCode')
+                Tables\Columns\TextColumn::make('language_code')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('translatedDescription'),
+                Tables\Columns\TextColumn::make('translated_description'),
             ])
             ->filters([
                 //

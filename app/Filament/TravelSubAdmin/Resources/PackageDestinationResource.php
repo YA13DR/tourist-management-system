@@ -5,6 +5,8 @@ namespace App\Filament\TravelSubAdmin\Resources;
 use App\Filament\TravelSubAdmin\Resources\PackageDestinationResource\Pages;
 use App\Filament\TravelSubAdmin\Resources\PackageDestinationResource\RelationManagers;
 use App\Models\PackageDestination;
+use App\Models\TravelAgency;
+use App\Models\TravelPackage;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -37,7 +39,7 @@ class PackageDestinationResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->whereHas('package.tour', function ($query) {
+            ->whereHas('package.agency', function ($query) {
                 $query->where('admin_id', auth()->id());
             });
     }
@@ -45,14 +47,21 @@ class PackageDestinationResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Hidden::make('package_id')
-                ->default(fn () => \App\Models\Tour::where('admin_id', auth()->id())->value('id')),
-                
+                Forms\Components\Select::make('package_id')
+                ->label('Choose Package')
+                ->options(function () {
+                    $agency_id = TravelAgency::where('admin_id', auth()->id())->value('id');
+            
+                    return TravelPackage::where('agency_id', $agency_id)
+                        ->pluck('name', 'id');
+                })
+                ->searchable()
+                ->required(),
                 Forms\Components\Select::make('location_id')
                     ->label('Location')
                     ->relationship('location', 'name')
                     ->required(),
-                Forms\Components\TextInput::make('dayNumber')
+                Forms\Components\TextInput::make('day_number')
                     ->required()
                     ->numeric(),
                 Forms\Components\Textarea::make('description')
@@ -73,7 +82,7 @@ class PackageDestinationResource extends Resource
                 Tables\Columns\TextColumn::make('location.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('dayNumber')
+                Tables\Columns\TextColumn::make('day_number')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('duration')

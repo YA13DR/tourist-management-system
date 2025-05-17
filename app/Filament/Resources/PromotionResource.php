@@ -17,7 +17,9 @@ class PromotionResource extends Resource
 {
     protected static ?string $model = Promotion::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-megaphone';
+    
+    protected static ?string $navigationGroup = 'Application Managment';
     public static function beforeCreate(Form $form, $record): void
     {
         $record->created_by = auth()->id();
@@ -70,7 +72,7 @@ class PromotionResource extends Resource
                 ])
                 ->nullable(),
 
-            Forms\Components\Toggle::make('isActive')
+            Forms\Components\Toggle::make('is_active')
                 ->default(true),
 
             Forms\Components\Hidden::make('created_by')
@@ -113,7 +115,7 @@ class PromotionResource extends Resource
                     7 => 'Flight',
                 ][$state] ?? 'Unknown'),
 
-            Tables\Columns\IconColumn::make('isActive')
+            Tables\Columns\IconColumn::make('is_active')
                 ->boolean()
                 ->label('Active'),
 

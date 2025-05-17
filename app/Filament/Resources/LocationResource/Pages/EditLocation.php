@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\TourAdmin\Resources\LocationResource\Pages;
+namespace App\Filament\Resources\LocationResource\Pages;
 
-use App\Filament\TourAdmin\Resources\LocationResource;
+use App\Filament\Resources\LocationResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

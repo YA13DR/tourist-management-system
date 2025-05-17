@@ -11,54 +11,24 @@ class MenuCategory extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'MenuCategories';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'restaurant_id',
         'name',
         'description',
-        'displayOrder',
-        'isActive'
+        'display_order',
+        'is_active'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'displayOrder' => 'integer',
-        'isActive' => 'boolean',
+        'display_order' => 'integer',
+        'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the restaurant that owns the menu category.
-     */
     public function restaurant(): BelongsTo
     {
         return $this->belongsTo(Restaurant::class, 'restaurant_id', 'id');
     }
 
-    /**
-     * Get the menu items for the category.
-     */
     public function menuItems(): HasMany
     {
         return $this->hasMany(MenuItem::class, 'category_id', 'id');

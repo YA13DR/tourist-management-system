@@ -12,84 +12,84 @@ return new class extends Migration
     public function up(): void
     {
         // Tour Categories table
-        Schema::create('TourCategories', function (Blueprint $table) {
+        Schema::create('tour_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name')->notNull();
             $table->text('description')->nullable();
-            $table->foreignId('parentCategory_id')->nullable()->constrained('TourCategories', 'id')->cascadeOnDelete();
-            $table->string('iconURL')->nullable();
-            $table->integer('displayOrder')->default(0);
-            $table->boolean('isActive')->default(true);
+            $table->foreignId('parent_category_id')->nullable()->constrained('tour_categories', 'id')->cascadeOnDelete();
+            $table->string('icon')->nullable();
+            $table->integer('display_order')->default(0);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
 
         // Tours table
-        Schema::create('Tours', function (Blueprint $table) {
+        Schema::create('tours', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->notNull();
+            $table->string('name')->unique();
             $table->text('description')->nullable();
-            $table->string('shortDescription')->nullable();
-            $table->foreignId('location_id')->constrained('Locations', 'id');
-            $table->decimal('durationHours', 5, 2)->nullable();
-            $table->integer('durationDays')->nullable();
-            $table->decimal('basePrice', 10, 2)->notNull();
-            $table->decimal('discountPercentage', 5, 2)->default(0);
-            $table->integer('maxCapacity')->notNull();
-            $table->integer('minParticipants')->default(1);
-            $table->integer('difficultyLevel')->default(1)->comment('1=Easy, 2=Moderate, 3=Difficult');
-            $table->decimal('averageRating', 3, 2)->default(0);
-            $table->integer('totalRatings')->default(0);
-            $table->string('mainImageURL')->nullable();
-            $table->boolean('isActive')->default(true);
-            $table->boolean('isFeatured')->default(false);
+            $table->string('short_description')->nullable();
+            $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
+            $table->decimal('duration_hours', 5, 2)->nullable();
+            $table->integer('duration_days')->nullable();
+            $table->decimal('base_price', 10, 2)->notNull();
+            $table->decimal('discount_percentage', 5, 2)->default(0);
+            $table->integer('max_capacity')->notNull();
+            $table->integer('min_participants')->default(1);
+            $table->enum('difficulty_level', ['easy', 'moderate', 'difficult'])->default('easy');
+            $table->decimal('average_rating', 3, 2)->default(0);
+            $table->integer('total_ratings')->default(0);
+            $table->string('main_image')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_featured')->default(false);
             $table->unsignedBigInteger('admin_id')->constrained('admins', 'id')->cascadeOnDelete();
             $table->timestamps();
         });
 
         // Tour Images table
-        Schema::create('TourImages', function (Blueprint $table) {
+        Schema::create('tour_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tour_id')->constrained('Tours', 'id');
-            $table->string('imageURL')->notNull();
-            $table->integer('displayOrder')->default(0);
+            $table->foreignId('tour_id')->constrained('tours', 'id');
+            $table->string('image')->notNull();
+            $table->integer('display_order')->default(0);
             $table->string('caption')->nullable();
-            $table->boolean('isActive')->default(true);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
 
         // Tour Category Mapping table
-        Schema::create('TourCategoryMapping', function (Blueprint $table) {
+        Schema::create('tour_category_mapping', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tour_id')->constrained('Tours', 'id');
-            $table->foreignId('category_id')->constrained('TourCategories', 'id');
+            $table->foreignId('tour_id')->constrained('tours', 'id');
+            $table->foreignId('category_id')->constrained('tour_categories', 'id');
             $table->timestamps();
         });
 
         // Tour Schedules table
-        Schema::create('TourSchedules', function (Blueprint $table) {
+        Schema::create('tour_schedules', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tour_id')->constrained('Tours', 'id');
-            $table->date('startDate')->notNull();
-            $table->date('endDate')->nullable();
-            $table->time('startTime')->nullable();
-            $table->integer('availableSpots')->notNull();
+            $table->foreignId('tour_id')->constrained('tours', 'id');
+            $table->date('start_date')->notNull();
+            $table->date('end_date')->nullable();
+            $table->time('start_time')->nullable();
+            $table->integer('available_spots')->notNull();
             $table->decimal('price', 10, 2)->nullable();
-            $table->boolean('isActive')->default(true);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
         
-        Schema::create('activites', function (Blueprint $table) {
+        Schema::create('activities', function (Blueprint $table) {
             $table->id();
             $table->string('name')->notNull();
             $table->string('description')->nullable();
             $table->string('image')->nullable();
             $table->timestamps();
         });
-        Schema::create('TourActivites', function (Blueprint $table) {
+        Schema::create('tour_activities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('schedule_id')->constrained('TourSchedules', 'id');
-            $table->foreignId('activity_id')->constrained('activites', 'id');
-            $table->boolean('isActive')->default(true);
+            $table->foreignId('schedule_id')->constrained('tour_schedules', 'id');
+            $table->foreignId('activity_id')->constrained('activities', 'id');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
@@ -99,10 +99,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('TourSchedules');
-        Schema::dropIfExists('TourCategoryMapping');
-        Schema::dropIfExists('TourImages');
-        Schema::dropIfExists('Tours');
-        Schema::dropIfExists('TourCategories');
+        Schema::dropIfExists('tour_schedules');
+        Schema::dropIfExists('tour_category_mapping');
+        Schema::dropIfExists('tour_images');
+        Schema::dropIfExists('tours');
+        Schema::dropIfExists('tour_crategories');
     }
 };
