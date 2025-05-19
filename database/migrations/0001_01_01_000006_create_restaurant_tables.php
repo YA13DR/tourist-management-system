@@ -65,7 +65,7 @@ return new class extends Migration
             $table->string('name')->notNull();
             $table->text('description')->nullable();
             $table->decimal('price', 10)->notNull();
-            $table->enum('size', ['small', 'medium', 'large'])->nullable();
+            $table->json('sizes')->nullable();
             $table->boolean('is_vegetarian')->default(false);
             $table->boolean('is_vegan')->default(false);
             $table->boolean('is_gluten_free')->default(false);

@@ -25,6 +25,7 @@ class RestaurantOrderRequest extends FormRequest
             'orderItems' => 'required|array|min:1',
             'orderItems.*.item_id' => 'required|exists:menu_items,id',
             'orderItems.*.quantity' => 'required|integer|min:1',
+            'orderItems.*.size' => 'required|string|in:small,medium,large',
         ];
     }
 }

@@ -17,6 +17,7 @@ class PackageBooking extends Model
         'number_of_adults',
         'number_of_children',
         'cost',
+        'payment_status',
         'status',
     ];
 

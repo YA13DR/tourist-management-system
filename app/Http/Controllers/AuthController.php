@@ -42,6 +42,10 @@ class AuthController extends Controller
     {
         return $this->authRepository->getAvailablePromotions();
     }
+    public function requestTourAdmin(Request $request)
+    {
+        return $this->authRepository->requestTourAdmin($request);
+    }
     public function login(LoginRequest $request)
     {
         return $this->authRepository->login($request);

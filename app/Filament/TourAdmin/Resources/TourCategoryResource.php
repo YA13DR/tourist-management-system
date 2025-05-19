@@ -14,7 +14,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-
+use Filament\Tables\Columns\HtmlColumn;
 class TourCategoryResource extends Resource
 {
     protected static ?string $model = TourCategory::class;
@@ -75,11 +75,10 @@ class TourCategoryResource extends Resource
                 Tables\Columns\TextColumn::make('parent_category_id')
                     ->numeric()
                     ->sortable(),
-                ImageColumn::make('icon')
+                Tables\Columns\TextColumn::make('icon')
                     ->label('Icon')
-                    ->circular() 
-                    ->size(40)   
-                    ->url(fn ($record) => $record->iconURL),
+                    ->getStateUsing(fn ($record) => "<i class='{$record->icon}' style='font-size: 20px'></i>")
+                    ->html(),
                 Tables\Columns\TextColumn::make('display_order')
                     ->numeric()
                     ->sortable(),

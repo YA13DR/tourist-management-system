@@ -18,4 +18,7 @@ class BookingController extends Controller
     public function getAllBookings(){
         return $this->bookingRepository->getAllBookings();
     }
+    public function cancelBooking($id){
+        return $this->bookingRepository->cancelBooking($id);
+    }
 }

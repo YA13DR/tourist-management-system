@@ -274,26 +274,43 @@ class RestaurantRepository implements RestaurantInterface
         $orderItems = $request->orderItems;
         $finalOrder = [];
         $totalFoodCost = 0;
-
+        
         foreach ($orderItems as $orderItem) {
             $menuItem = MenuItem::find($orderItem['item_id']);
             
             if (!$menuItem) {
                 return $this->error("Menu item not found", 404);
             }
-
+        
             $quantity = $orderItem['quantity'];
-            $subtotal = $menuItem->price * $quantity;
-
+            $size = $orderItem['size'] ?? 'medium';
+            $availableSizes = json_decode($menuItem->sizes, true);
+            if (!in_array($size, $availableSizes)) {
+                return $this->error("Size '$size' is not available for this menu item", 422);
+            }
+            $price = $menuItem->price;
+        
+            switch ($size) {
+                case 'small':
+                    $price *= 0.85; 
+                    break;
+                case 'large':
+                    $price *= 1.20;
+                    break;
+            }
+        
+            $subtotal = $price * $quantity;
+        
             $finalOrder[] = [
                 'item_id' => $menuItem->id,
                 'name' => $menuItem->name,
                 'quantity' => $quantity,
-                'price' => $menuItem->price,
-                'subtotal' => $subtotal,
+                'size' => $size,
+                'price' => round($price, 2),
+                'subtotal' => round($subtotal, 2),
             ];
-
-            $totalFoodCost += $subtotal;  
+        
+            $totalFoodCost += $subtotal;
         }
         $booking->order = json_encode($finalOrder);
         $booking->cost += $totalFoodCost;

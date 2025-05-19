@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Validation\Rule;
 
 class TravelAgencyResource extends Resource
 {
@@ -85,7 +86,10 @@ class TravelAgencyResource extends Resource
                                 ->where('section', $section)
                                 ->pluck('name', 'id')
                                 ->toArray();
-                        })->required(),
+                        })->required()
+                        ->rule(function () {
+                            return Rule::unique('restaurants', 'admin_id');
+                        }),
                         Forms\Components\Textarea::make('description')
                         ->columnSpanFull(),
                 ])

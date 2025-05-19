@@ -15,7 +15,7 @@ class MenuItem extends Model
         'name',
         'description',
         'price',
-        'size',
+        'sizes',
         'image',
         'is_vegetarian',
         'is_vegan',

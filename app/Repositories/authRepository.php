@@ -9,6 +9,7 @@ use App\Interface\AuthInterface;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\OTPRequest;
+use App\Models\Admin;
 use App\Models\Booking;
 use App\Models\DiscountPoint;
 use App\Models\FeedBack;
@@ -16,10 +17,13 @@ use App\Models\Payment;
 use App\Models\PointRule;
 use App\Models\Promotion;
 use App\Models\Rating;
+use App\Models\Tour;
 use App\Models\User;
 use App\Models\UserRank;
 use App\Notifications\OTPNotification;
-use Request;
+use App\Notifications\PaymentNotification;
+use App\Notifications\TourAdminRequestNotification;
+use Illuminate\Http\Request;
 use Str;
 use Twilio\Rest\Client;
 use App\Traits\ApiResponse;
@@ -58,7 +62,13 @@ class authRepository implements AuthInterface
         ]);
     
         $booking->update(['paymentStatus' => 2]);
-    
+
+        $user = $booking->user; 
+        $user->notify(new PaymentNotification(
+            $payment->amount,
+            $payment->paymentMethod,
+            $payment->payment_reference
+        ));
         return $this->success('Payment completed successfully', [
             'bookingReference' => $booking->bookingReference,
             'amount' => $payment->amount,
@@ -156,6 +166,28 @@ class authRepository implements AuthInterface
 
         return $this->success('Available promotions', $promotions);
     }
+
+    public function requestTourAdmin(Request $request){
+
+        $validated = $request->validate([
+            'tour_name' => 'required|string|max:255',
+            'destination' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+        $user = auth()->user();
+
+        $admin = Admin::where('role', 'admin')->where('section','tour')->first();
+        if (!$admin) {
+            return response()->json(['message' => 'No admin found'], 404);
+        }
+
+        $admin->notify(new TourAdminRequestNotification($user, $validated));
+
+        return response()->json(['message' => 'Your request has been sent successfully.']);
+    }
+
     public function login(LoginRequest $request){
         $request->validated($request->all());
 

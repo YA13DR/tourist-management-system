@@ -3,6 +3,10 @@ namespace App\Repositories;
 
 use App\Interface\BookingInterface;
 use App\Models\Booking;
+use App\Models\HotelBooking;
+use App\Models\RestaurantBooking;
+use App\Models\TourBooking;
+use App\Models\TravelBooking;
 use App\Traits\ApiResponse;
 
 class BookingRepository implements BookingInterface
@@ -10,7 +14,6 @@ class BookingRepository implements BookingInterface
     use ApiResponse;
     public function getBookingHistory(){
         $user = auth('sanctum')->user();
-
         $bookings = Booking::with([
             'tourBooking.tour',
             'hotelBooking.hotel',
@@ -19,62 +22,61 @@ class BookingRepository implements BookingInterface
         ])
         ->where('user_id', $user->id)
         ->where('status', 4)
-        ->latest()
         ->get();
         $response = [
-            'tours' => [],
-            'hotels' => [],
-            'restaurants' => [],
-            'flights' => [],
-            'taxis' => [],
+            'tour' => [],
+            'hotel' => [],
+            'restaurant' => [],
+            'flight' => [],
+            'taxi' => [],
         ];
         foreach ($bookings as $booking) {
-            switch ($booking->bookingType) {
-                case 1:
-                    $response['tours'][] = [
-                        'bookingReference' => $booking->bookingReference,
-                        'date' => $booking->bookingDate,
-                        'totalPrice' => $booking->totalPrice,
+            switch ($booking->booking_type) {
+                case 'tour':
+                    $response['tour'][] = [
+                        'booking_reference' => $booking->booking_reference,
+                        'date' => $booking->booking_date,
+                        'total_price' => $booking->total_price,
                         'tour' => optional($booking->tourBooking->tour)->only(['id', 'name', 'location']),
                         'schedule' => optional($booking->tourBooking->schedule),
-                        'numberOfAdults' => $booking->tourBooking->numberOfAdults ?? 0,
-                        'numberOfChildren' => $booking->tourBooking->numberOfChildren ?? 0,
+                        'number_of_adults' => $booking->tourBooking->number_of_adults ?? 0,
+                        'number_of_children' => $booking->tourBooking->number_of_children ?? 0,
                     ];
                     break;
-                case 2:
-                    $response['hotels'][] = [
-                        'bookingReference' => $booking->bookingReference,
-                        'date' => $booking->bookingDate,
-                        'totalPrice' => $booking->totalPrice,
-                        'hotel' => optional($booking->hotelBooking->roomType->hotel)->only(['id', 'name', 'location']),
-                        'roomType' => optional($booking->hotelBooking->roomType)->name,
-                        'checkIn' => $booking->hotelBooking->checkInDate ?? null,
-                        'checkOut' => $booking->hotelBooking->checkOutDate ?? null,
+                case 'hotel':
+                    $response['hotel'][] = [
+                        'booking_reference' => $booking->booking_reference,
+                        'date' => $booking->booking_date,
+                        'total_price' => $booking->total_price,
+                        'hotel' => optional(optional(optional($booking->hotelBooking)->roomType)->hotel)?->only(['id', 'name', 'location']),
+                        'room_type' => optional(optional($booking->hotelBooking)->roomType)->name ?? null,
+                        'check_in_date' => optional($booking->hotelBooking)->check_in_date ?? null,
+                        'check_out_date' => optional($booking->hotelBooking)->check_out_date ?? null,
                     ];
                     break;
-                case 3:
-                    $response['flights'][] = [
-                        'bookingReference' => $booking->bookingReference,
-                        'date' => $booking->bookingDate,
-                        'totalPrice' => $booking->totalPrice,
+                case 'package':
+                    $response['flight'][] = [
+                        'booking_reference' => $booking->booking_reference,
+                        'date' => $booking->booking_date,
+                        'total_price' => $booking->total_price,
                         'flight' => optional($booking->travelBooking->flight),
-                        'numberOfPeople' => $booking->travelBooking->number_of_people ?? 0,
+                        'number_of_people' => $booking->travelBooking->number_of_people ?? 0,
                     ];
                     break;
-                case 4:
+                case 'restaurant':
                     $orderItems = [];
                     if (!empty($booking->restaurantBooking->order)) {
                         $orderItems = json_decode($booking->restaurantBooking->order, true);
                     }
 
-                    $response['restaurants'][] = [
-                        'bookingReference' => $booking->bookingReference,
-                        'date' => $booking->bookingDate,
-                        'totalPrice' => $booking->totalPrice,
+                    $response['restaurant'][] = [
+                        'booking_reference' => $booking->booking_reference,
+                        'date' => $booking->booking_date,
+                        'total_price' => $booking->total_price,
                         'restaurant' => optional($booking->restaurantBooking->restaurant)?->only(['id', 'name', 'location']),
-                        'reservationDate' => $booking->restaurantBooking->reservationDate ?? null,
-                        'reservationTime' => $booking->restaurantBooking->reservationTime ?? null,
-                        'guests' => $booking->restaurantBooking->numberOfGuests ?? 0,
+                        'reservation_date' => $booking->restaurantBooking->reservation_date ?? null,
+                        'reservation_time' => $booking->restaurantBooking->reservation_time ?? null,
+                        'guests' => $booking->restaurantBooking->number_of_guests ?? 0,
                         'order' => $orderItems,
                     ];
                     break;
@@ -86,7 +88,8 @@ class BookingRepository implements BookingInterface
     public function getAllBookings()
     {
         $user= auth('sanctum')->user();
-    
+        // dd(Booking::where('user_id', $user->id)->get());
+        
         $bookings = Booking::with([
             'tourBooking.tour',
             'tourBooking.schedule',
@@ -95,68 +98,64 @@ class BookingRepository implements BookingInterface
             'travelBooking.flight',
         ])
         ->where('user_id', $user->id)
-        ->latest()
         ->get();
     
         $response = [
-            'tours' => [],
-            'hotels' => [],
-            'restaurants' => [],
-            'flights' => [],
-            'taxis' => [],
+            'tour' => [],
+            'hotel' => [],
+            'restaurant' => [],
+            'flight' => [],
+            'taxi' => [],
         ];
     
         foreach ($bookings as $booking) {
-            switch ($booking->bookingType) {
-                case 1:
-                    $response['tours'][] = [
-                        'bookingReference' => $booking->bookingReference,
-                        'date' => $booking->bookingDate,
-                        'totalPrice' => $booking->totalPrice,
-                        'status' => $booking->status,
+            switch ($booking->booking_type) {
+                case 'tour':
+                    $response['tour'][] = [
+                        'booking_reference' => $booking->booking_reference,
+                        'date' => $booking->booking_date,
+                        'total_price' => $booking->total_price,
                         'tour' => optional($booking->tourBooking->tour)->only(['id', 'name', 'location']),
                         'schedule' => optional($booking->tourBooking->schedule),
-                        'numberOfAdults' => $booking->tourBooking->numberOfAdults ?? 0,
-                        'numberOfChildren' => $booking->tourBooking->numberOfChildren ?? 0,
+                        'number_of_adults' => $booking->tourBooking->number_of_adults ?? 0,
+                        'number_of_children' => $booking->tourBooking->number_of_children ?? 0,
                     ];
                     break;
-                case 2:
-                    $response['hotels'][] = [
-                        'bookingReference' => $booking->bookingReference,
-                        'date' => $booking->bookingDate,
-                        'totalPrice' => $booking->totalPrice,
-                        'status' => $booking->status,
-                        'hotel' => optional($booking->hotelBooking->roomType->hotel)->only(['id', 'name', 'location']),
-                        'roomType' => optional($booking->hotelBooking->roomType)->name,
-                        'checkIn' => $booking->hotelBooking->checkInDate ?? null,
-                        'checkOut' => $booking->hotelBooking->checkOutDate ?? null,
+                case 'hotel':
+                    $response['hotel'][] = [
+                        'booking_reference' => $booking->booking_reference,
+                        'date' => $booking->booking_date,
+                        'total_price' => $booking->total_price,
+                        'hotel' => optional(optional(optional($booking->hotelBooking)->roomType)->hotel)?->only(['id', 'name', 'location']),
+                        'room_type' => optional(optional($booking->hotelBooking)->roomType)->name ?? null,
+                        'check_in_date' => optional($booking->hotelBooking)->check_in_date ?? null,
+                        'check_out_date' => optional($booking->hotelBooking)->check_out_date ?? null,
                     ];
                     break;
-                case 3:
-                    $response['flights'][] = [
-                        'bookingReference' => $booking->bookingReference,
-                        'date' => $booking->bookingDate,
-                        'totalPrice' => $booking->totalPrice,
-                        'status' => $booking->status,
+                case 'package':
+                    $response['flight'][] = [
+                        'booking_reference' => $booking->booking_reference,
+                        'date' => $booking->booking_date,
+                        'total_price' => $booking->total_price,
                         'flight' => optional($booking->travelBooking->flight),
-                        'numberOfPeople' => $booking->travelBooking->number_of_people ?? 0,
+                        'number_of_people' => $booking->travelBooking->number_of_people ?? 0,
                     ];
                     break;
-                case 4:
+                case 'restaurant':
                     $orderItems = [];
                     if (!empty($booking->restaurantBooking->order)) {
                         $orderItems = json_decode($booking->restaurantBooking->order, true);
                     }
-                
-                    $response['restaurants'][] = [
-                        'bookingReference' => $booking->bookingReference,
-                        'date' => $booking->bookingDate,
-                        'totalPrice' => $booking->totalPrice,
+
+                    $response['restaurant'][] = [
+                        'booking_reference' => $booking->booking_reference,
+                        'date' => $booking->booking_date,
+                        'total_price' => $booking->total_price,
                         'restaurant' => optional($booking->restaurantBooking->restaurant)?->only(['id', 'name', 'location']),
-                        'reservationDate' => $booking->restaurantBooking->reservationDate ?? null,
-                        'reservationTime' => $booking->restaurantBooking->reservationTime ?? null,
-                        'guests' => $booking->restaurantBooking->numberOfGuests ?? 0,
-                        'order' => $orderItems, 
+                        'reservation_date' => $booking->restaurantBooking->reservation_date ?? null,
+                        'reservation_time' => $booking->restaurantBooking->reservation_time ?? null,
+                        'guests' => $booking->restaurantBooking->number_of_guests ?? 0,
+                        'order' => $orderItems,
                     ];
                     break;
             }
@@ -164,6 +163,46 @@ class BookingRepository implements BookingInterface
     
         return $this->success('All bookings retrieved successfully', $response);
     }
-    
+    public function cancelBooking($id){
+        $booking = Booking::find($id);
+        if (!$booking) {
+            return $this->error('Booking not found', 404);
+        }
+
+        if ($booking->payment_status == 'paid') {
+            return $this->error('Cannot cancel booking because it is already paid', 400);
+        }
+
+        $createdAt = $booking->created_at;
+        $now = now();
+
+        if ($now->diffInHours($createdAt) > 24) {
+            return $this->error('Cannot cancel booking after 24 hours of creation', 400);
+        }
+
+        $modelsMap = [
+            'tour' => TourBooking::class,
+            'hotel' => HotelBooking::class,
+            'restaurant' => RestaurantBooking::class,
+            'package' => TravelBooking::class,
+        ];
+
+        $type = $booking->booking_type;
+
+        if (!isset($modelsMap[$type])) {
+            return $this->error('Invalid booking type', 400);
+        }
+
+        $detailModel = $modelsMap[$type];
+
+        $detailRecord = $detailModel::where('booking_id', $id)->first();
+        if ($detailRecord) {
+            $detailRecord->delete();
+        }
+
+        $booking->delete();
+
+        return $this->success('Booking cancelled successfully');
+    }
 
 }

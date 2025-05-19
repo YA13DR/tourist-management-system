@@ -21,4 +21,8 @@ class LocationController extends Controller
     {
         return $this->locationRepository->showAllLocation();
     }
+    public function showAllLocationFilter()
+    {
+        return $this->locationRepository->showAllLocationFilter();
+    }
 }

@@ -16,6 +16,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Validation\Rule;
 
 
 class TourResource extends Resource
@@ -136,6 +137,9 @@ class TourResource extends Resource
                             ->toArray();
                     })
                     ->required()
+                    ->rule(function () {
+                        return Rule::unique('restaurants', 'admin_id');
+                    }),
             ]);
     }
 

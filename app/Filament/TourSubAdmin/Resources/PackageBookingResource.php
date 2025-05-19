@@ -45,7 +45,7 @@ class PackageBookingResource extends Resource
                 $query->where('admin_id', auth()->id());
             });
     }
-    private static function calculateBaseCost($package_id, $number_of_adults, $number_of_children)
+    public static function calculateBaseCost($package_id, $number_of_adults, $number_of_children)
     {
         $package = TravelPackage::find($package_id);
         if (!$package) return 0;
@@ -53,7 +53,7 @@ class PackageBookingResource extends Resource
         return $package->base_price * ($number_of_adults + $number_of_children);
     }
 
-    private static function applyPromotion($cost, $promotionCode): float
+    public static function applyPromotion($cost, $promotionCode): float
     {
         $promotion = Promotion::where('promotion_code', $promotionCode)
             ->where('is_active', true)
@@ -72,7 +72,7 @@ class PackageBookingResource extends Resource
         return -1; 
     }
 
-    private static function calculateFinalCost($package_id, $number_of_adults, $number_of_children, $promotion_code = null)
+    public static function calculateFinalCost($package_id, $number_of_adults, $number_of_children, $promotion_code = null)
     {
         $base_cost = self::calculateBaseCost($package_id, $number_of_adults, $number_of_children);
 
@@ -90,7 +90,6 @@ public static function form(Form $form): Form
         Forms\Components\Hidden::make('tour_id')
             ->default(fn () => \App\Models\Tour::where('admin_id', auth()->id())->value('id'))
             ->dehydrated(),
-
         Forms\Components\Select::make('package_id')
             ->relationship('package', 'name')
             ->required()
@@ -157,23 +156,19 @@ public static function form(Form $form): Form
                 }
             }),
 
-        Forms\Components\TextInput::make('cost')
+            Forms\Components\TextInput::make('cost')
             ->numeric()
             ->prefix('USD')
             ->required()
             ->disabled()
             ->dehydrated(),
-    ])
-    ->disabled(fn (callable $get) => $get('cost') <= 0); 
+        ]); 
 }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('booking_id')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('package_id')
                     ->numeric()
                     ->sortable(),
@@ -189,6 +184,9 @@ public static function form(Form $form): Form
                 Tables\Columns\TextColumn::make('cost')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('payment_status')
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -202,8 +200,39 @@ public static function form(Form $form): Form
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('pay')
+        ->label('Pay')
+        ->icon('heroicon-m-currency-dollar')
+        ->color('success')
+        ->form([
+            \Filament\Forms\Components\TextInput::make('password')
+                ->label('Password ')
+                ->password()
+                ->required(),
+        ])
+        ->action(function (array $data, $record) {
+            if (!\Hash::check($data['password'], Filament::auth()->user()->password)) {
+                Notification::make()
+                    ->title('  Incorrect Password ')
+                    ->danger()
+                    ->send();
+
+                return;
+            }
+
+            $record->update(['payment_status' => 'paid']);
+
+            Notification::make()
+                ->title('Payed Successfuly  !')
+                ->success()
+                ->send();
+        })
+        ->modalHeading('confirm Paying ')
+        ->modalSubmitActionLabel('Confirm Paying ')
+        ->visible(fn ($record) => $record->payment_status !== 'paid'),
+
+        Tables\Actions\DeleteAction::make()
+            ->visible(fn ($record) => $record->payment_status !== 'paid'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

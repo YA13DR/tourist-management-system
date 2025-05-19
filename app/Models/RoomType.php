@@ -38,11 +38,11 @@ class RoomType extends Model
 
     public function availability(): HasMany
     {
-        return $this->hasMany(RoomAvailability::class, 'roomType_id', 'id');
+        return $this->hasMany(RoomAvailability::class, 'room_type_id', 'id');
     }
 
     public function bookings(): HasMany
     {
-        return $this->hasMany(HotelBooking::class, 'roomType_id', 'id');
+        return $this->hasMany(HotelBooking::class, 'room_type_id', 'id');
     }
 }

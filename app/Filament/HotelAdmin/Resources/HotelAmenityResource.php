@@ -57,7 +57,9 @@ class HotelAmenityResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('icon')
-                    ->searchable(),
+                    ->label('Icon')
+                    ->getStateUsing(fn ($record) => "<i class='{$record->icon}' style='font-size: 20px'></i>")
+                    ->html(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])

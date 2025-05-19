@@ -52,7 +52,15 @@ class MenuItemResource extends Resource
                         ->required()
                         ->numeric()
                         ->prefix('$'),
-        
+                    Forms\Components\CheckboxList::make('sizes')
+                        ->label('Available Sizes')
+                        ->options([
+                            'small' => 'Small',
+                            'medium' => 'Medium',
+                            'large' => 'Large',
+                        ])
+                        ->required()
+                        ->columns(3),
                     Forms\Components\TextInput::make('spiciness')
                         ->numeric()
                         ->default(null),

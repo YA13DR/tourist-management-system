@@ -7,6 +7,7 @@ use App\Http\Requests\PayRequest;
 use App\Http\Requests\RatingRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\OTPRequest;
+use Illuminate\Http\Request;
 
 interface AuthInterface
 {
@@ -16,6 +17,7 @@ interface AuthInterface
     public function addRating(RatingRequest $request);
     public function submitFeedback(FeedBackRequest $request);
     public function getAvailablePromotions();
+    public function requestTourAdmin(Request $request);
     public function login(LoginRequest $request);
     public function signup(RegisterRequest $request);
     public function OTPCode(OTPRequest $request);

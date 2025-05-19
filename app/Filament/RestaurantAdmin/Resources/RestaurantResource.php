@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rule;
 use Log;
 
 class RestaurantResource extends Resource
@@ -147,12 +148,15 @@ class RestaurantResource extends Resource
                         ->label('Manager')
                         ->options(function () {
                             $section = auth()->user()?->section;
-                            return \App\Models\Admin::where('role', 'sub_admin')
+                            return Admin::where('role', 'sub_admin')
                                 ->where('section', $section)
                                 ->pluck('name', 'id')
                                 ->toArray();
                         })
-                        ->required(),
+                        ->required()
+                        ->rule(function () {
+                            return Rule::unique('restaurants', 'admin_id');
+                        }),
                 ])->columns(1),
         ]);
     }

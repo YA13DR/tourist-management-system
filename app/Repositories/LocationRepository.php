@@ -68,4 +68,27 @@ class LocationRepository implements LocationInterface
             'locations' => $result,
         ]);
     }
+    public function showAllLocationFilter(){
+        $locations = Location::with('city.country')->inRandomOrder()->take(4)->get();
+
+        $result = $locations->map(function($location) {
+            $user = auth()->user();
+            $isFavourited = false;
+            if ($user) {
+                $isFavourited = Favourite::where([
+                    'user_id' => $user->id,
+                    'favoritable_id' => $location->id,
+                    'favoritable_type' => Location::class,
+                ])->exists();
+            }
+            return [
+                'location' => $location,
+                'is_favourite' => $isFavourited,
+            ];
+        });
+    
+        return $this->success('All locations retrieved successfully', [
+            'locations' => $result,
+        ]);
+    }
 }

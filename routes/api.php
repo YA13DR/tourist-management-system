@@ -1,6 +1,7 @@
   <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\FavouriteController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\LocationController;
@@ -14,7 +15,8 @@ use Illuminate\Support\Facades\Route;
 //login
 Route::post('/auth/login',[AuthController::class,'login']);
 Route::post('/auth/signup',[AuthController::class,'signup']);
-//user
+
+/////////////////////// user //////////////////////////////////////////////////
 Route::middleware('auth:sanctum')->group(function () {
   //point and Rank
   Route::get('/auth/userRank',[AuthController::class,'userRank']);
@@ -27,17 +29,24 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/auth/getAvailablePromotions',[AuthController::class,'getAvailablePromotions']);
   //payment
   Route::post('/auth/payForBooking/{id}',[AuthController::class,'payForBooking']);
-  //booking
-  Route::get('/auth/getAllBookings',[AuthController::class,'getAllBookings']);
-  //booking
-  Route::post('/auth/getBookingHistory',[AuthController::class,'getBookingHistory']);
-  //booking
+  //requestTourAdmin
+  Route::post('/auth/requestTourAdmin',[AuthController::class,'requestTourAdmin']);
+});
+
+//////////////////// booking /////////////////////////////////////////////////////
+Route::middleware('auth:sanctum')->group(function () {
+  Route::get('/booking/getAllBookings',[BookingController::class,'getAllBookings']);
+  Route::get('/booking/getBookingHistory',[BookingController::class,'getBookingHistory']);
+  Route::get('/booking/cancelBooking/{id}',[BookingController::class,'cancelBooking']);
+});
+
+//////////////////// location ///////////////////////////////////////////////////
+Route::middleware('auth:sanctum')->group(function () {
   Route::get('/location/show/{id}',[LocationController::class,'showLocation']);
-  //booking
   Route::get('/location/showAll',[LocationController::class,'showAllLocation']);
 });
 
-// // Package Management Routes
+/////////////////// Package Management Routes ///////////////////////////////////
 Route::middleware('auth:sanctum')->group(function () {
   Route::get('travel/showAll',[TravelController::class,'getAllFlights']);
   Route::get('travel/show/{id}',[TravelController::class,'getFlight']);
@@ -49,7 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('travel/bookFlightByPoint/{id}',[TravelController::class,'bookFlightByPoint']);
   Route::post('travel/updateFlightBooking/{id}',[TravelController::class,'updateFlightBooking']);
 });
-// // Package Management Routes
+///////////////// Package Management Routes ////////////////////////////////////////
 Route::middleware('auth:sanctum')->group(function () {
   Route::get('package/show/{id}',[PackageController::class,'showpackage']);
   Route::get('package/showAll',[PackageController::class,'showAllpackages']);
@@ -58,7 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('package/bookPackage/{id}',[PackageController::class,'bookTravelPackage']);
 });
 
-// // Favourite Management Routes
+///////////////// Favourite Management Routes /////////////////////////////////////
 Route::middleware('auth:sanctum')->group(function () {
   Route::get('favourite/show/{id}',[FavouriteController::class,'showFavourite']);
   Route::get('favourite/showAll',[FavouriteController::class,'showAllFavourite']);
@@ -69,7 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('/favourite/delete/{id}', [FavouriteController::class, 'removeFromFavouriteById']);
 });
 
-// // Tour Management Routes
+////////////////// Tour Management Routes ////////////////////////////////////////
 Route::middleware('auth:sanctum')->group(function () {
   Route::get('tour/show/{id}',[TourController::class,'showTour']);
   Route::get('tour/showAll',[TourController::class,'showAllTour']);
@@ -77,7 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('tour/bookTourByPoint/{id}',[TourController::class,'bookTourByPoint']);
 });
 
-// // Hotel Management Routes
+/////////////////// Hotel Management Routes ////////////////////////////////////
 Route::middleware('auth:sanctum')->group(function () {
   Route::get('hotel/show/{id}',[HotelController::class,'showHotel']);
   Route::get('hotel/showAll',[HotelController::class,'showAllHotel']);
@@ -89,7 +98,8 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('hotel/bookHotel/{id}',[HotelController::class,'bookHotel']);
 });
 
-// Restaurant Management Routes
+
+/////////////////// Restaurant Management Routes//////////////////////////
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('restaurants/show/{id}',[RestaurantController::class,'showRestaurant']);
     Route::get('restaurants/showAll',[RestaurantController::class,'showAllRestaurant']);
@@ -100,14 +110,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('restaurants/bookTable/{id}',[RestaurantController::class,'bookTable']);
     Route::post('restaurants/addOrder/{id}',[RestaurantController::class,'addOrder']);
 });
-
-// // Location Management Routes
-// Route::prefix('locations')->group(function () {
-//     // Routes will be implemented here
-// });
-
-// // Taxi Service Management Routes
-// Route::prefix('taxi-services')->group(function () {
-//     // Routes will be implemented here
-// });
 
