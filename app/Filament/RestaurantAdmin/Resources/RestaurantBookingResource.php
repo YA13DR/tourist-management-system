@@ -24,18 +24,25 @@ class RestaurantBookingResource extends Resource
     protected static ?int $navigationSort = 3;
     public static function canAccess(): bool
     {
-        return Filament::auth()->check() 
-         && Filament::auth()->user()->role === 'sub_admin' 
-         && Filament::auth()->user()->section === 'restaurant';
+        return Filament::auth()->check()  
+        &&((Filament::auth()->user()->role === 'admin' 
+            && Filament::auth()->user()->section === 'restaurant')
+        ||(Filament::auth()->user()->role === 'sub_admin' 
+            && Filament::auth()->user()->section === 'restaurant'));
     }
     public static function shouldRegisterNavigation(): bool
     {
         return Filament::auth()->check()  
-        && Filament::auth()->user()->role === 'sub_admin' 
-            && Filament::auth()->user()->section === 'restaurant';
+        &&((Filament::auth()->user()->role === 'admin' 
+            && Filament::auth()->user()->section === 'restaurant')
+        ||(Filament::auth()->user()->role === 'sub_admin' 
+            && Filament::auth()->user()->section === 'restaurant'));
     }
     public static function getEloquentQuery(): Builder
     {
+        if (Filament::auth()->user()->role === 'admin') {
+            return parent::getEloquentQuery();
+        }
         return parent::getEloquentQuery()
         ->whereHas('restaurant', function ($query) {
             $query->where('admin_id', auth()->id());
@@ -67,6 +74,7 @@ class RestaurantBookingResource extends Resource
                     ->preload()
                     // ->multiple()
                     ->native(false),
+                    
                 Forms\Components\DatePicker::make('reservation_date')
                     ->required(),
                 Forms\Components\TimePicker::make('reservation_time')
@@ -95,6 +103,18 @@ class RestaurantBookingResource extends Resource
                 Tables\Columns\TextColumn::make('table_id')
                     ->numeric()
                     ->sortable(),
+                    Tables\Columns\TextColumn::make('booking.status')
+                    ->label('Status')
+                        ->numeric()
+                        ->sortable(),
+                    Tables\Columns\TextColumn::make('booking.payment_status')
+                    ->label('payment status')
+                        ->numeric()
+                        ->sortable(),
+                    Tables\Columns\TextColumn::make('booking.discount_amount')
+                    ->label('discount')
+                        ->numeric()
+                        ->sortable(),
                 Tables\Columns\TextColumn::make('reservation_date')
                     ->date()
                     ->sortable(),

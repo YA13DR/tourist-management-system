@@ -22,19 +22,25 @@ class TourBookingResource extends Resource
     protected static ?string $navigationGroup = 'Booking Managment';
     public static function canAccess(): bool
     {
-        return Filament::auth()->check() 
-         && Filament::auth()->user()->role === 'sub_admin' 
-         && Filament::auth()->user()->section === 'tour'
-         ;
+        return Filament::auth()->check()  
+        &&((Filament::auth()->user()->role === 'admin' 
+            && Filament::auth()->user()->section === 'tour')
+        ||(Filament::auth()->user()->role === 'sub_admin' 
+            && Filament::auth()->user()->section === 'tour'));
     }
     public static function shouldRegisterNavigation(): bool
     {
         return Filament::auth()->check()  
-        && Filament::auth()->user()->role === 'sub_admin' 
-            && Filament::auth()->user()->section === 'tour';
+        &&((Filament::auth()->user()->role === 'admin' 
+            && Filament::auth()->user()->section === 'tour')
+        ||(Filament::auth()->user()->role === 'sub_admin' 
+            && Filament::auth()->user()->section === 'tour'));
     }
     public static function getEloquentQuery(): Builder
     {
+        if (Filament::auth()->user()->role === 'admin') {
+            return parent::getEloquentQuery();
+        }
         return parent::getEloquentQuery()
         ->whereHas('tour', function ($query) {
             $query->where('admin_id', auth()->id());
@@ -66,6 +72,18 @@ class TourBookingResource extends Resource
                 Tables\Columns\TextColumn::make('cost')
                     ->numeric()
                     ->sortable(),
+                    Tables\Columns\TextColumn::make('booking.status')
+                    ->label('Status')
+                        ->numeric()
+                        ->sortable(),
+                    Tables\Columns\TextColumn::make('booking.payment_status')
+                    ->label('payment status')
+                        ->numeric()
+                        ->sortable(),
+                    Tables\Columns\TextColumn::make('booking.discount_amount')
+                    ->label('discount')
+                        ->numeric()
+                        ->sortable(),
                 Tables\Columns\TextColumn::make('number_of_adults')
                     ->numeric()
                     ->sortable(),

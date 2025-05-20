@@ -23,19 +23,25 @@ class HotelBookingResource extends Resource
     protected static ?int $navigationSort = 3;
     public static function canAccess(): bool
     {
-        return Filament::auth()->check() 
-         && Filament::auth()->user()->role === 'sub_admin' 
-         && Filament::auth()->user()->section === 'hotel'
-         ;
+        return Filament::auth()->check()  
+        &&((Filament::auth()->user()->role === 'admin' 
+            && Filament::auth()->user()->section === 'hotel')
+        ||(Filament::auth()->user()->role === 'sub_admin' 
+            && Filament::auth()->user()->section === 'hotel'));
     }
     public static function shouldRegisterNavigation(): bool
     {
         return Filament::auth()->check()  
-        && Filament::auth()->user()->role === 'sub_admin' 
-            && Filament::auth()->user()->section === 'hotel';
+        &&((Filament::auth()->user()->role === 'admin' 
+            && Filament::auth()->user()->section === 'hotel')
+        ||(Filament::auth()->user()->role === 'sub_admin' 
+            && Filament::auth()->user()->section === 'hotel'));
     }
     public static function getEloquentQuery(): Builder
     {
+        if (Filament::auth()->user()->role === 'admin') {
+            return parent::getEloquentQuery();
+        }
         return parent::getEloquentQuery()
         ->whereHas('hotel', function ($query) {
             $query->where('admin_id', auth()->id());
@@ -65,10 +71,22 @@ class HotelBookingResource extends Resource
                 Tables\Columns\TextColumn::make('roomType.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('checkIn_date')
+                Tables\Columns\TextColumn::make('booking.status')
+                ->label('Status')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('booking.payment_status')
+                ->label('payment status')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('booking.discount_amount')
+                ->label('discount')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('check_in_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('checkOut_date')
+                Tables\Columns\TextColumn::make('check_out_date')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('number_of_rooms')

@@ -23,23 +23,29 @@ class TravelBookingResource extends Resource
 
     public static function canAccess(): bool
     {
-        return Filament::auth()->check() 
-         && Filament::auth()->user()->role === 'sub_admin' 
-         && Filament::auth()->user()->section === 'travel'
-         ;
+        return Filament::auth()->check()  
+        &&((Filament::auth()->user()->role === 'admin' 
+            && Filament::auth()->user()->section === 'travel')
+        ||(Filament::auth()->user()->role === 'sub_admin' 
+            && Filament::auth()->user()->section === 'travel'));
     }
     public static function shouldRegisterNavigation(): bool
     {
         return Filament::auth()->check()  
-        && Filament::auth()->user()->role === 'sub_admin' 
-            && Filament::auth()->user()->section === 'travel';
+        &&((Filament::auth()->user()->role === 'admin' 
+            && Filament::auth()->user()->section === 'travel')
+        ||(Filament::auth()->user()->role === 'sub_admin' 
+            && Filament::auth()->user()->section === 'travel'));
     }
     public static function getEloquentQuery(): Builder
     {
+        if (Filament::auth()->user()->role === 'admin') {
+            return parent::getEloquentQuery();
+        }
         return parent::getEloquentQuery()
-            ->whereHas('flight.agency', function ($query) {
-                $query->where('admin_id', auth()->id());
-            });
+        ->whereHas('flight.agency', function ($query) {
+            $query->where('admin_id', auth()->id());
+        });
     }
     public static function form(Form $form): Form
     {
@@ -65,7 +71,18 @@ class TravelBookingResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->searchable(),
-               
+                Tables\Columns\TextColumn::make('booking.status')
+                    ->label('Status')
+                        ->numeric()
+                        ->sortable(),
+                    Tables\Columns\TextColumn::make('booking.payment_status')
+                    ->label('payment status')
+                        ->numeric()
+                        ->sortable(),
+                    Tables\Columns\TextColumn::make('booking.discount_amount')
+                    ->label('discount')
+                        ->numeric()
+                        ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

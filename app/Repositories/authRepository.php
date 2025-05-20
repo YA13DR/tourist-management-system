@@ -171,11 +171,19 @@ class authRepository implements AuthInterface
 
         $validated = $request->validate([
             'tour_name' => 'required|string|max:255',
-            'destination' => 'required|string|max:255',
+            'short_description' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'location_id' => 'nullable|exists:locations,id',
+            'duration_hours' => 'nullable|numeric|min:0',
+            'duration_days' => 'nullable|integer|min:0',
+            'base_price' => 'required|numeric|min:0',
+            'discount_percentage' => 'nullable|numeric|min:0|max:100',
+            'max_capacity' => 'required|integer|min:1',
+            'min_participants' => 'nullable|integer|min:1',
+            'difficulty_level' => 'nullable|in:easy,moderate,difficult',
+            'main_image' => 'nullable|image|max:2048',
         ]);
+        
         $user = auth()->user();
 
         $admin = Admin::where('role', 'admin')->where('section','tour')->first();
