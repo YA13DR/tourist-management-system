@@ -90,13 +90,11 @@ class LocationResource extends Resource
                 Tables\Columns\TextColumn::make('longitude')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('city')
+                Tables\Columns\TextColumn::make('city.name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('country')
+                Tables\Columns\TextColumn::make('city.country.name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('region')
-                    ->searchable(),
-                Tables\Columns\IconColumn::make('isPopular')
+                Tables\Columns\IconColumn::make('is_popular')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

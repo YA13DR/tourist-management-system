@@ -45,12 +45,12 @@ class HotelRepository implements HotelInterface
                 ->where('applicable_type', 2)
                 ->first();
                 $roomsData = [];
-            foreach ($hotel->roomTypes as $room) {
-                $roomsData = [
-                    'name ' => $room->name,
-                    'number ' => $room->number,
-                ];
-            }
+                foreach ($hotel->roomTypes as $room) {
+                    $roomsData[] = [
+                        'name' => $room->name,
+                        'number' => $room->number,
+                    ];
+                }
       return $this->success('Store retrieved successfully', [
         'hotel ' => $hotel,
         'image'=>$hotel->images,

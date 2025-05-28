@@ -45,14 +45,7 @@ class BookingResource extends Resource
 
             TextColumn::make('booking_type')
                 ->label('Type')
-                ->formatStateUsing(fn ($state) => match($state) {
-                    1 => 'Tour',
-                    2 => 'Hotel',
-                    3 => 'Taxi',
-                    4 => 'Restaurant',
-                    5 => 'Package',
-                    default => 'Unknown',
-                }),
+                ->formatStateUsing(fn ($state) => ucfirst($state)),
 
             TextColumn::make('booking_date')
                 ->label('Date')
@@ -63,17 +56,13 @@ class BookingResource extends Resource
                 ->label('Status')
                 ->badge()
                 ->color(fn ($state) => match($state) {
-                    1 => 'warning',
-                    2 => 'success',
-                    3 => 'danger',
-                    4 => 'gray',
+                    'pending' => 'warning',
+                    'confirmed' => 'success',
+                    'cancelled' => 'danger',
+                    'completed' => 'gray',
+                    default => 'secondary',
                 })
-                ->formatStateUsing(fn ($state) => match($state) {
-                    1 => 'Pending',
-                    2 => 'Confirmed',
-                    3 => 'Cancelled',
-                    4 => 'Completed',
-                }),
+                ->formatStateUsing(fn ($state) => ucfirst($state)),
 
             TextColumn::make('total_price')
                 ->label('Total')
@@ -83,42 +72,37 @@ class BookingResource extends Resource
                 ->label('Discount')
                 ->money('USD'),
 
-            TextColumn::make('payment_status')
+                TextColumn::make('payment_status')
                 ->label('Payment')
                 ->badge()
                 ->color(fn ($state) => match($state) {
-                    1 => 'warning',
-                    2 => 'success',
-                    3 => 'gray',
-                    4 => 'danger',
+                    'pending' => 'warning',
+                    'paid' => 'success',
+                    'refunded' => 'gray',
+                    'failed' => 'danger',
+                    default => 'secondary',
                 })
-                ->formatStateUsing(fn ($state) => match($state) {
-                    1 => 'Pending',
-                    2 => 'Paid',
-                    3 => 'Refunded',
-                    4 => 'Failed',
-                }),
+                ->formatStateUsing(fn ($state) => ucfirst($state)),
             ])
             ->filters([
                 SelectFilter::make('booking_type')
-                ->label('Booking Type')
-                ->options([
-                    1 => 'Tour',
-                    2 => 'Hotel',
-                    3 => 'Taxi',
-                    4 => 'Restaurant',
-                    5 => 'Package',
-                ])
-                ->attribute('booking_type'),
+                    ->label('Booking Type')
+                    ->options([
+                        'tour' => 'Tour',
+                        'hotel' => 'Hotel',
+                        'taxi' => 'Taxi',
+                        'restaurant' => 'Restaurant',
+                        'package' => 'Package',
+                    ]),
+
                 SelectFilter::make('payment_status')
-                ->label('Payment Status')
-                ->options([
-                    1 => 'Pending',
-                    2 => 'Paid',
-                    3 => 'Refunded',
-                    4 => 'Failed',
-                ])
-                ->attribute('payment_status'),
+                    ->label('Payment Status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'paid' => 'Paid',
+                        'refunded' => 'Refunded',
+                        'failed' => 'Failed',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -121,7 +121,8 @@ class authRepository implements AuthInterface
 
         $existing = Rating::where([
             ['user_id', '=', $user->id],
-            ['rating_type', '=', $request['rating_type']]
+            ['rating_type', '=', $request['rating_type']],
+            ['entity_id', '=', $request['entity_id']],
         ])->first();
 
         if ($existing) {
