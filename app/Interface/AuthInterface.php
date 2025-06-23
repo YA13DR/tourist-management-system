@@ -11,13 +11,6 @@ use Illuminate\Http\Request;
 
 interface AuthInterface
 {
-    public function payForBooking($id , PayRequest $request);
-    public function UserRank();
-    public function discountPoints();
-    public function addRating(RatingRequest $request);
-    public function submitFeedback(FeedBackRequest $request);
-    public function getAvailablePromotions();
-    public function requestTourAdmin(Request $request);
     public function login(LoginRequest $request);
     public function signup(RegisterRequest $request);
     public function OTPCode(OTPRequest $request);

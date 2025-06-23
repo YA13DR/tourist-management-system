@@ -42,7 +42,7 @@ class TourAdminRequestNotification extends Notification
             ->line("User {$this->user->name} ({$this->user->email}) is requesting to become a tour admin.")
             ->line("Tour Information:")
             ->line("• Name: {$this->tour->tour_name}")
-            ->line("• Destination: {$this->tour->destination}")
+            ->line("• Destination: {$this->tour->location_id}")
             ->line("• Description: {$this->tour->description}")
             ->line("• Short Description: {$this->tour->short_description}")
             ->line("• Duration (Hours): {$this->tour->duration_hours}")
@@ -65,7 +65,7 @@ class TourAdminRequestNotification extends Notification
             'user_name' => $this->user->first_name,
             'user_email' => $this->user->email,
             'tour_name' => $this->tour->tour_name,
-            'destination' => $this->tour->destination,
+            'destination' => $this->tour->location_id,
             'description' => $this->tour->description,
             'short_description' => $this->tour->short_description,
             'duration_hours' => $this->tour->duration_hours,

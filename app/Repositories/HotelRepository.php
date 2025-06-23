@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Favourite;
 use App\Models\Hotel;
 use App\Models\HotelBooking;
+use App\Models\Policy;
 use App\Models\Promotion;
 use App\Models\RoomAvailability;
 use App\Models\RoomType;
@@ -28,7 +29,7 @@ class HotelRepository implements HotelInterface
        if (!$hotel) {
              return $this->error('Hotel not found', 404);
       }
-      $user = auth()->user();
+      $user = Auth::user();
 
             $isFavourited = false;
             if ($user) {
@@ -51,6 +52,13 @@ class HotelRepository implements HotelInterface
                         'number' => $room->number,
                     ];
                 }
+            $policies = Policy::where('service_type', 1)->get()->map(function ($policy) {
+                return [
+                    'policy_type' => $policy->policy_type,
+                    'cutoff_time' => $policy->cutoff_time,
+                    'penalty_percentage' => $policy->penalty_percentage,
+                ];
+            });
       return $this->success('Store retrieved successfully', [
         'hotel ' => $hotel,
         'image'=>$hotel->images,
@@ -64,6 +72,7 @@ class HotelRepository implements HotelInterface
             'discount_value' => $promotion->discount_value,
             'minimum_purchase' => $promotion->minimum_purchase,
         ] : null, 
+          'policies' => $policies,
     ]);
     }
 
@@ -71,7 +80,7 @@ class HotelRepository implements HotelInterface
         $hotels = Hotel::with('images','roomTypes')->get();
 
         $result = $hotels->map(function($hotel) {
-            $user = auth()->user();
+            $user = Auth::user();
             $isFavourited = false;
             if ($user) {
                 $isFavourited = Favourite::where([
@@ -310,25 +319,6 @@ class HotelRepository implements HotelInterface
             'room_type' => $roomType->id,
             'cost' => $totalAfterDiscount,
             'discount_amount' => $discountAmount,
-        ]);
-    }
-    public function showHistory(){
-        $user_id=auth('sanctum')->id();
-        $hotelReservations = HotelBooking::with('hotel','roomType')->where('user_id',$user_id)->get();
-        $result=[];
-        foreach($hotelReservations as $hotelReservation){
-            $result[]=[
-                'hotel'=>$hotelReservation->hotel->name,
-                'room_type'=>$hotelReservation->room_type->name,
-                'number_of_guests'=>$hotelReservation->number_of_guests,
-                'number_of_room'=>$hotelReservation->number_of_room,
-                'check_in_date'=>$hotelReservation->check_in_date,
-                'cost'=>$hotelReservation->cost,
-            ];
-        }
-
-        return $this->success('Order added successfully', [
-            'reservation_id' => $result,
         ]);
     }
 }

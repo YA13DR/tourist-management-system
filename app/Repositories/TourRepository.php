@@ -7,6 +7,7 @@ use App\Interface\TourInterface;
 use App\Models\Booking;
 use App\Models\DiscountPoint;
 use App\Models\Favourite;
+use App\Models\Policy;
 use App\Models\Promotion;
 use App\Models\Tour;
 use App\Models\TourBooking;
@@ -84,6 +85,13 @@ class TourRepository implements TourInterface
                 ->where('applicable_type', 1) 
                 ->orwhere('applicable_type', 2) 
                 ->first();
+            $policies = Policy::where('service_type', 4)->get()->map(function ($policy) {
+                return [
+                    'policy_type' => $policy->policy_type,
+                    'cutoff_time' => $policy->cutoff_time,
+                    'penalty_percentage' => $policy->penalty_percentage,
+                ];
+            });
         return $this->success('Store retrieved successfully', [
                 'tour ' => $tour,
                 'is_favourited' => $isFavourited,
@@ -94,6 +102,7 @@ class TourRepository implements TourInterface
                     'discount_value' => $promotion->discount_value,
                     'minimum_purchase' => $promotion->minimum_purchase,
                 ] : null,
+                'policies' => $policies,
         ]);
     }
 

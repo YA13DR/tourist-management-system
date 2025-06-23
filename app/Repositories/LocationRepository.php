@@ -28,7 +28,7 @@ class LocationRepository implements LocationInterface
        if (!$location) {
              return $this->error('location not found', 404);
       }
-      $user = auth()->user();
+      $user = Auth::user();
 
             $isFavourited = false;
             if ($user) {
@@ -49,7 +49,7 @@ class LocationRepository implements LocationInterface
         $locations = Location::with('city.country')->get();
 
         $result = $locations->map(function($location) {
-            $user = auth()->user();
+            $user = Auth::user();
             $isFavourited = false;
             if ($user) {
                 $isFavourited = Favourite::where([
@@ -72,7 +72,7 @@ class LocationRepository implements LocationInterface
         $locations = Location::with('city.country')->inRandomOrder()->take(4)->get();
 
         $result = $locations->map(function($location) {
-            $user = auth()->user();
+            $user = Auth::user();
             $isFavourited = false;
             if ($user) {
                 $isFavourited = Favourite::where([

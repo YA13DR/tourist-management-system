@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PayRequest;
 use App\Interface\BookingInterface;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Request;
 
 class BookingController extends Controller
 {
@@ -11,6 +12,10 @@ class BookingController extends Controller
     public function __construct(BookingInterface $bookingRepository)
     {
         $this->bookingRepository = $bookingRepository;
+    }
+    public function payForBooking($id,PayRequest $request)
+    {
+        return $this->bookingRepository->payForBooking($id,$request);
     }
     public function getBookingHistory(){
         return $this->bookingRepository->getBookingHistory();
@@ -20,5 +25,8 @@ class BookingController extends Controller
     }
     public function cancelBooking($id){
         return $this->bookingRepository->cancelBooking($id);
+    }
+    public function modifyBooking(Request $request,$id){
+        return $this->bookingRepository->modifyBooking($request,$id);
     }
 }

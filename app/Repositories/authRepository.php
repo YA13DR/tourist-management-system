@@ -33,177 +33,12 @@ use Illuminate\Support\Facades\Hash;
 class authRepository implements AuthInterface
 {
     use ApiResponse;
-    public function payForBooking($id , PayRequest $request){
-        $request->validated();
-        $booking = Booking::find($id);
-
-        if (!$booking) {
-            return $this->error('Booking not found', 404);
-        }
-
-        if ($booking->paymentStatus == 2) {
-            return $this->error('This booking is already paid', 400);
-        }
-    
-        $amount = $request->amount;
-    
-        if ($amount < $booking->totalPrice) {
-            return $this->error('Paid amount is less than required total price', 400);
-        }
-        $payment = Payment::create([
-            'booking_id' => $booking->id,
-            'payment_reference' => 'PAY-' . strtoupper(Str::random(10)),
-            'amount' => $amount,
-            'paymentDate' => now(),
-            'paymentMethod' => $request->paymentMethod,
-            'transaction_id' => 'FAKE-' . strtoupper(Str::random(8)),
-            'status' => 2, 
-            'gateway_response' => json_encode(['message' => 'Fake payment completed']),
-        ]);
-    
-        $booking->update(['paymentStatus' => 2]);
-
-        $user = $booking->user; 
-        $user->notify(new PaymentNotification(
-            $payment->amount,
-            $payment->paymentMethod,
-            $payment->payment_reference
-        ));
-        return $this->success('Payment completed successfully', [
-            'bookingReference' => $booking->bookingReference,
-            'amount' => $payment->amount,
-            'payment_method' => $payment->paymentMethod,
-            'payment_reference' => $payment->payment_reference,
-        ]);
-    }
-
-    public function UserRank(){
-
-        $user = auth('sanctum')->user();
-        if (!$user) {
-            return $this->error('User not authenticated', 401);
-        }
-        $rank = UserRank::where('user_id',$user->id)->first();
-        if ($rank) {
-            return $this->success('Successful', [
-                'rank' => $rank->points_earned,
-            ], 200);
-        }
-
-        return $this->error('Error', 401);
-    }
-    public function discountPoints(){
-        $discountActions = PointRule::select('action', 'points')->get();
-
-    if ($discountActions->isEmpty()) {
-        return $this->error('No available discount actions found', 404);
-    }
-
-    return $this->success('Available discount actions', [
-        'discounts' => $discountActions->map(function ($item) {
-            return [
-                'action' => $item->action,
-                'points' => $item->points,
-            ];
-        }),
-    ], 200);
-    }
-
-    public function addRating(RatingRequest $request)
-    {
-        $user = auth('sanctum')->user();
-
-        if (!$user) {
-            return $this->error('User not authenticated', 401);
-        }
-
-        $request->validated($request->all());
-
-        $existing = Rating::where([
-            ['user_id', '=', $user->id],
-            ['rating_type', '=', $request['rating_type']],
-            ['entity_id', '=', $request['entity_id']],
-        ])->first();
-
-        if ($existing) {
-            return $this->error('You have already rated this booking for this entity type', 400);
-        }
-
-        Rating::create([
-            'user_id'       => $user->id,
-            'rating_type'   => $request['rating_type'],
-            'entity_id'     => $request['entity_id'],
-            'rating'        => $request['rating'],
-            'comment'       => $request['comment'],
-            'ratingdate'    => now(),
-            'isVisible'     => true,
-            'admin_response'=> null,
-        ]);
-
-        return $this->success('Rating submitted successfully');
-    }
-    public function submitFeedback(FeedBackRequest $request)
-    {
-        $request->validated($request->all());
-
-        $feedback = FeedBack::create([
-            'user_id' => Auth::id(),
-            'feedback_text' => $request['feedback_text'],
-            'feedback_type' => $request['feedback_type'],
-            'feedback_date' => now(),
-            'status' => 1
-        ]);
-
-        return $this->success('Feedback submitted successfully', $feedback);
-    }
-    public function getAvailablePromotions()
-    {
-        $now = now();
-
-        $promotions = Promotion::where('isActive', true)
-            ->where('start_date', '<=', $now)
-            ->where('end_date', '>=', $now)
-            ->get();
-
-        return $this->success('Available promotions', $promotions);
-    }
-
-    public function requestTourAdmin(Request $request){
-
-        $validated = $request->validate([
-            'tour_name' => 'required|string|max:255',
-            'short_description' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'location_id' => 'nullable|exists:locations,id',
-            'duration_hours' => 'nullable|numeric|min:0',
-            'duration_days' => 'nullable|integer|min:0',
-            'base_price' => 'required|numeric|min:0',
-            'discount_percentage' => 'nullable|numeric|min:0|max:100',
-            'max_capacity' => 'required|integer|min:1',
-            'min_participants' => 'nullable|integer|min:1',
-            'difficulty_level' => 'nullable|in:easy,moderate,difficult',
-            'main_image' => 'nullable|image|max:2048',
-        ]);
-        
-        $user = auth()->user();
-
-        $admin = Admin::where('role', 'admin')->where('section','tour')->first();
-        if (!$admin) {
-            return response()->json(['message' => 'No admin found'], 404);
-        }
-
-        $admin->notify(new TourAdminRequestNotification($user, $validated));
-
-        return response()->json(['message' => 'Your request has been sent successfully.']);
-    }
-
     public function login(LoginRequest $request){
         $request->validated($request->all());
 
         if (!Auth::attempt($request->only('email', 'password'))) {
             return $this->error('Invalid credentials', 401);
         }
-
         $user = Auth::user();
         if (!$user) {
             return $this->error('User not found', 404);
@@ -219,11 +54,11 @@ class authRepository implements AuthInterface
     public function signup(RegisterRequest $request){
         $request->validated($request->all());
 
-        // $image = $request->file('photo')->getClientOriginalName();
-        // $path = $request->file('photo')->storeAs('', $request->first_name . '_' . $image, 'profile');
+        $image = $request->file('photo')->getClientOriginalName();
+        $path = $request->file('photo')->storeAs('profile', $request->first_name .$request->last_name . '_' . $image, 'public');
 
         $user = User::create([
-            'photo' => $request->photo,
+            'photo' => $path,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'location' => $request->location,
@@ -234,13 +69,11 @@ class authRepository implements AuthInterface
         if (!$user) {
             return $this->error('Registration failed', 400);
         }
-
-        $token = $user->createToken('API token for ' . $user->email)->plainTextToken;
-
+        $token = $user->createToken('API Token')->plainTextToken;
         if (!$token) {
             return $this->error('Unable to create token', 400);
         }
-
+        $user->generateCode();
        
         $user->notify(new OTPNotification());
 

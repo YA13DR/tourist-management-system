@@ -19,8 +19,10 @@ use App\Repositories\HotelRepository;
 use App\Repositories\LocationRepository;
 use App\Repositories\PackageRepository;
 use App\Repositories\RestaurantRepository;
+use App\Repositories\ServiceRepository;
 use App\Repositories\TourRepository;
 use App\Repositories\TravelRepository;
+use App\Interface\ServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class RepositryProvider extends ServiceProvider
@@ -51,10 +53,6 @@ class RepositryProvider extends ServiceProvider
             FavouriteRepository::class,
         );
         $this->app->bind(
-            PackageInterface::class,
-            PackageRepository::class,
-        );
-        $this->app->bind(
             TravelInterface::class,
             TravelRepository::class,
         );
@@ -65,6 +63,10 @@ class RepositryProvider extends ServiceProvider
         $this->app->bind(
             LocationInterface::class,
             LocationRepository::class,
+        );
+        $this->app->bind(
+            ServiceInterface::class,
+            ServiceRepository::class,
         );
     }
 

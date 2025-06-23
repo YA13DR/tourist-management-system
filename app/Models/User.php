@@ -83,7 +83,7 @@ class User extends Authenticatable
         $this->save();
     }
     public function isCodeValid() {
-        return $this->expire_at < now();
+        return $this->expire_at > now();
     }
 
     public function resetCode(){

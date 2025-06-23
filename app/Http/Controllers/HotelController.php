@@ -31,7 +31,4 @@ class HotelController extends Controller
     public function bookHotel( $id,HotelBookingRequest $request){
         return $this->hotelRepository->bookHotel($id, $request);
     }
-    public function showHistory( ){
-        return $this->hotelRepository->showHistory();
-    }
 }

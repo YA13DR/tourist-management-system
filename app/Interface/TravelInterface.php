@@ -16,5 +16,4 @@ interface TravelInterface
 
     public function bookFlight($id, TravelBookingRequest $request);
     public function bookFlightByPoint($id, TravelBookingRequest $request);
-    public function updateFlightBooking($id, Request $request);
 }

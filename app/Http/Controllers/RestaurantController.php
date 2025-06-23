@@ -27,6 +27,10 @@ class RestaurantController extends Controller
     {
         return $this->retaurantRepository->showNearByRestaurant($request);
     }
+    public function showRestaurantByLocation(Request $request)
+    {
+        return $this->retaurantRepository->showRestaurantByLocation($request);
+    }
     
     public function showMenuCategory()
     {
@@ -43,10 +47,5 @@ class RestaurantController extends Controller
     public function bookTable($id,RestaurantBookingRequest $request)
     {
         return $this->retaurantRepository->bookTable($id,$request);
-    }
- 
-    public function addOrder($id,RestaurantOrderRequest $request)
-    {
-        return $this->retaurantRepository->addOrder($id,$request);
     }
 }

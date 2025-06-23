@@ -1,17 +1,66 @@
 <?php
 namespace App\Repositories;
 
+use App\Http\Requests\PayRequest;
 use App\Interface\BookingInterface;
 use App\Models\Booking;
 use App\Models\HotelBooking;
+use App\Models\Payment;
+use App\Models\Policy;
 use App\Models\RestaurantBooking;
 use App\Models\TourBooking;
 use App\Models\TravelBooking;
+use App\Notifications\PaymentNotification;
 use App\Traits\ApiResponse;
+use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Str;
 
 class BookingRepository implements BookingInterface
 {
     use ApiResponse;
+     public function payForBooking($id , PayRequest $request){
+        $request->validated();
+        $booking = Booking::find($id);
+
+        if (!$booking) {
+            return $this->error('Booking not found', 404);
+        }
+
+        if ($booking->paymentStatus == 2) {
+            return $this->error('This booking is already paid', 400);
+        }
+    
+        $amount = $request->amount;
+    
+        if ($amount < $booking->totalPrice) {
+            return $this->error('Paid amount is less than required total price', 400);
+        }
+        $payment = Payment::create([
+            'booking_id' => $booking->id,
+            'payment_reference' => 'PAY-' . strtoupper(Str::random(10)),
+            'amount' => $amount,
+            'paymentDate' => now(),
+            'paymentMethod' => $request->paymentMethod,
+            'transaction_id' => 'FAKE-' . strtoupper(Str::random(8)),
+            'status' => 2, 
+            'gateway_response' => json_encode(['message' => 'Fake payment completed']),
+        ]);
+    
+        $booking->update(['paymentStatus' => 2]);
+
+        $user = $booking->user; 
+        $user->notify(new PaymentNotification(
+            $payment->amount,
+            $payment->paymentMethod,
+            $payment->payment_reference
+        ));
+        return $this->success('Payment completed successfully', [
+            'bookingReference' => $booking->bookingReference,
+            'amount' => $payment->amount,
+            'payment_method' => $payment->paymentMethod,
+            'payment_reference' => $payment->payment_reference,
+        ]);
+    }
     public function getBookingHistory(){
         $user = auth('sanctum')->user();
         $bookings = Booking::with([
@@ -162,47 +211,163 @@ class BookingRepository implements BookingInterface
         }
     
         return $this->success('All bookings retrieved successfully', $response);
-    }
-    public function cancelBooking($id){
+    } 
+    public function cancelBooking($id)
+    {
         $booking = Booking::find($id);
         if (!$booking) {
             return $this->error('Booking not found', 404);
         }
 
-        if ($booking->payment_status == 'paid') {
-            return $this->error('Cannot cancel booking because it is already paid', 400);
-        }
-
-        $createdAt = $booking->created_at;
-        $now = now();
-
-        if ($now->diffInHours($createdAt) > 24) {
-            return $this->error('Cannot cancel booking after 24 hours of creation', 400);
-        }
-
-        $modelsMap = [
-            'tour' => TourBooking::class,
-            'hotel' => HotelBooking::class,
-            'restaurant' => RestaurantBooking::class,
-            'package' => TravelBooking::class,
+        $serviceTypeMap = [
+            1 => 'hotel',
+            2 => 'flight',
+            3 => 'restaurant',
+            4 => 'tour',
         ];
 
-        $type = $booking->booking_type;
-
-        if (!isset($modelsMap[$type])) {
+        $serviceType = $serviceTypeMap[$booking->booking_type] ?? null;
+        if (!$serviceType) {
             return $this->error('Invalid booking type', 400);
         }
 
-        $detailModel = $modelsMap[$type];
+        $policy = Policy::where('service_type', $serviceType)
+            ->where('policy_type', 'cancel')
+            ->first();
 
-        $detailRecord = $detailModel::where('booking_id', $id)->first();
-        if ($detailRecord) {
-            $detailRecord->delete();
+        if (!$policy) {
+            return $this->error('Cancellation policy not found for this service', 400);
+        }
+
+        $bookingTime = null;
+        switch ($booking->booking_type) {
+            case 1:
+                $hotelBooking = HotelBooking::where('booking_id', $booking->id)->first();
+                $bookingTime = $hotelBooking?->check_in_date;
+                break;
+            case 2:
+                $flightBooking = TravelBooking::where('booking_id', $booking->id)->first();
+                $bookingTime = $flightBooking?->departure_time;
+                break;
+            case 3:
+                $restaurantBooking = RestaurantBooking::where('booking_id', $booking->id)->first();
+                if ($restaurantBooking) {
+                    $bookingTime = $restaurantBooking->reservation_date . ' ' . $restaurantBooking->reservation_time;
+                }
+                break;
+            case 4:
+                $tourBooking = TourBooking::where('booking_id', $booking->id)->first();
+                $bookingTime = $tourBooking?->tour_date;
+                break;
+        }
+
+        if (!$bookingTime) {
+            return $this->error('Relevant booking time not found', 400);
+        }
+
+        $hoursBefore = now()->diffInHours($bookingTime, false);
+        if ($hoursBefore < $policy->cutoff_time) {
+            $penalty = ($booking->total_price * $policy->penalty_percentage) / 100;
+            return $this->error("Cancellation not allowed less than {$policy->cutoff_time} hours before. Penalty: {$penalty}", 400);
+        }
+
+        switch ($booking->booking_type) {
+            case 1:
+                HotelBooking::where('booking_id', $booking->id)->delete();
+                break;
+            case 2:
+                TravelBooking::where('booking_id', $booking->id)->delete();
+                break;
+            case 3:
+                RestaurantBooking::where('booking_id', $booking->id)->delete();
+                break;
+            case 4:
+                TourBooking::where('booking_id', $booking->id)->delete();
+                break;
         }
 
         $booking->delete();
 
-        return $this->success('Booking cancelled successfully');
+        return $this->success('Booking cancelled successfully, penalty applied: 0');
     }
+    public function modifyBooking(Request $request, $id)
+    {
+       $booking = Booking::find($id);
+        if (!$booking) {
+            return $this->error('Booking not found', 404);
+        }
 
+        $policy = Policy::where('service_type', $booking->booking_type)
+            ->where('policy_type', 'modify')
+            ->first();
+
+        if (!$policy) {
+            return $this->error('Modification policy not found for this service', 400);
+        }
+
+        $bookingTime = null;
+
+        switch ($booking->booking_type) {
+            case 1:
+                $hotelBooking = HotelBooking::where('booking_id', $booking->id)->first();
+                $bookingTime = optional($hotelBooking)->check_in_date;
+                break;
+            case 2:
+                $travelBooking = TravelBooking::where('booking_id', $booking->id)->first();
+                $bookingTime = optional($travelBooking?->flight)->departure_time;
+                break;
+            case 3:
+                $restaurantBooking = RestaurantBooking::where('booking_id', $booking->id)->first();
+                if ($restaurantBooking) {
+                    $bookingTime = $restaurantBooking->reservation_date . ' ' . $restaurantBooking->reservation_time;
+                }
+                break;
+            case 4:
+                $tourBooking = TourBooking::where('booking_id', $booking->id)->first();
+                $bookingTime = optional($tourBooking)->tour_date;
+                break;
+        }
+
+        if (!$bookingTime) {
+            return $this->error('Booking time not found', 400);
+        }
+
+        $hoursBefore = now()->diffInHours($bookingTime, false);
+
+        if ($hoursBefore < $policy->cutoff_time) {
+            $penalty = round($booking->total_price * $policy->penalty_percentage / 100, 2);
+            return $this->error("Modification not allowed less than {$policy->cutoff_time} hours before. Penalty: {$penalty}", 400);
+        }
+
+        switch ($booking->booking_type) {
+            case 1:
+                $hotelBooking = HotelBooking::where('booking_id', $booking->id)->first();
+                $hotelBooking->check_in_date = $request->check_in_date ?? $hotelBooking->check_in_date;
+                $hotelBooking->check_out_date = $request->check_out_date ?? $hotelBooking->check_out_date;
+                $hotelBooking->save();
+                break;
+
+            case 2:
+                $travelBooking = TravelBooking::where('booking_id', $booking->id)->first();
+                $travelBooking->number_of_people = $request->number_of_people ?? $travelBooking->number_of_people;
+                $travelBooking->flight_class = $request->flight_class ?? $travelBooking->flight_class;
+                $travelBooking->save();
+                break;
+
+            case 3:
+                $restaurantBooking = RestaurantBooking::where('booking_id', $booking->id)->first();
+                $restaurantBooking->number_of_people = $request->number_of_people ?? $restaurantBooking->number_of_people;
+                $restaurantBooking->reservation_time = $request->reservation_time ?? $restaurantBooking->reservation_time;
+                $restaurantBooking->save();
+                break;
+
+            case 4:
+                $tourBooking = TourBooking::where('booking_id', $booking->id)->first();
+                $tourBooking->tour_date = $request->tour_date ?? $tourBooking->tour_date;
+                $tourBooking->save();
+                break;
+        }
+
+        return $this->success('Booking modified successfully');
+    }
 }

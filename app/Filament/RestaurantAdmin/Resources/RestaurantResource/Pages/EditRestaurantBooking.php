@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\RestaurantResource\Pages;
+namespace App\Filament\RestaurantAdmin\Resources\RestaurantResource\Pages;
 
-use App\Filament\Resources\RestaurantResource;
+use App\Filament\RestaurantAdmin\Resources\RestaurantResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

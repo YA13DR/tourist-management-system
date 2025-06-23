@@ -7,6 +7,7 @@ use App\Http\Controllers\HotelController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\RestaurantController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TourController;
 use App\Http\Controllers\TravelController;
 use Illuminate\Http\Request;
@@ -18,32 +19,41 @@ Route::post('/auth/signup',[AuthController::class,'signup']);
 
 /////////////////////// user //////////////////////////////////////////////////
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/auth/resendOTPCode',[AuthController::class,'resendOTPCode']);
+    Route::post('/auth/OTPCode',[AuthController::class,'OTPCode']);
+    Route::post('/auth/logout',[AuthController::class,'logout']);
+});
+
+/////////////////////// Application //////////////////////////////////////////////////
+Route::middleware('auth:sanctum')->group(function () {
   //point and Rank
-  Route::get('/auth/userRank',[AuthController::class,'userRank']);
-  Route::get('/auth/discountPoints',[AuthController::class,'discountPoints']);
+  Route::get('/auth/userRank',[ServiceController::class,'userRank']);
+  Route::get('/auth/discountPoints',[ServiceController::class,'discountPoints']);
   //Rating
-  Route::post('/auth/addRating',[AuthController::class,'addRating']);
+  Route::post('/auth/addRating',[ServiceController::class,'addRating']);
   //FeedBack
-  Route::post('/auth/submitFeedback',[AuthController::class,'submitFeedback']);
+  Route::post('/auth/submitFeedback',[ServiceController::class,'submitFeedback']);
   //promotion
-  Route::get('/auth/getAvailablePromotions',[AuthController::class,'getAvailablePromotions']);
-  //payment
-  Route::post('/auth/payForBooking/{id}',[AuthController::class,'payForBooking']);
+  Route::get('/auth/getAvailablePromotions',[ServiceController::class,'getAvailablePromotions']);
   //requestTourAdmin
-  Route::post('/auth/requestTourAdmin',[AuthController::class,'requestTourAdmin']);
+  Route::post('/auth/requestTourAdmin',[ServiceController::class,'requestTourAdmin']);
 });
 
 //////////////////// booking /////////////////////////////////////////////////////
 Route::middleware('auth:sanctum')->group(function () {
+   //payment
+  Route::post('/booking/payForBooking/{id}',[BookingController::class,'payForBooking']);
   Route::get('/booking/getAllBookings',[BookingController::class,'getAllBookings']);
   Route::get('/booking/getBookingHistory',[BookingController::class,'getBookingHistory']);
   Route::get('/booking/cancelBooking/{id}',[BookingController::class,'cancelBooking']);
+  Route::post('/booking/modifyBooking/{id}',[BookingController::class,'modifyBooking']);
 });
 
 //////////////////// location ///////////////////////////////////////////////////
 Route::middleware('auth:sanctum')->group(function () {
   Route::get('/location/show/{id}',[LocationController::class,'showLocation']);
   Route::get('/location/showAll',[LocationController::class,'showAllLocation']);
+  Route::get('/location/showAllLocationFilter',[LocationController::class,'showAllLocationFilter']);
 });
 
 /////////////////// Package Management Routes ///////////////////////////////////
@@ -57,14 +67,6 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('travel/bookFlight/{id}',[TravelController::class,'bookFlight']);
   Route::post('travel/bookFlightByPoint/{id}',[TravelController::class,'bookFlightByPoint']);
   Route::post('travel/updateFlightBooking/{id}',[TravelController::class,'updateFlightBooking']);
-});
-///////////////// Package Management Routes ////////////////////////////////////////
-Route::middleware('auth:sanctum')->group(function () {
-  Route::get('package/show/{id}',[PackageController::class,'showpackage']);
-  Route::get('package/showAll',[PackageController::class,'showAllpackages']);
-  Route::get('package/showAllAgency',[PackageController::class,'showAllAgency']);
-  Route::get('package/showAll/{id}',[PackageController::class,'showAllpackagesAgency']);
-  Route::post('package/bookPackage/{id}',[PackageController::class,'bookTravelPackage']);
 });
 
 ///////////////// Favourite Management Routes /////////////////////////////////////
@@ -93,8 +95,6 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('hotel/showNearBy',[HotelController::class,'showNearByHotel']);
   Route::get('hotel/showAviableRoom/{id}',[HotelController::class,'showAviableRoom']);
   Route::post('hotel/showAviableRoomType/{id}',[HotelController::class,'showAviableRoomType']);
-  Route::get('hotel/showHistory',[HotelController::class,'showHistory']);
-  Route::get('hotel/showReservationRoom',[HotelController::class,'showReservationRoom']);
   Route::post('hotel/bookHotel/{id}',[HotelController::class,'bookHotel']);
 });
 
@@ -104,10 +104,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('restaurants/show/{id}',[RestaurantController::class,'showRestaurant']);
     Route::get('restaurants/showAll',[RestaurantController::class,'showAllRestaurant']);
     Route::get('restaurants/showNearBy',[RestaurantController::class,'showNearByRestaurant']);
+    Route::get('restaurants/showRestaurantByLocation',[RestaurantController::class,'showRestaurantByLocation']);
     Route::get('restaurants/showMenuItem/{id}',[RestaurantController::class,'showMenuItem']);
     Route::get('restaurants/showMenuCategory/{id}',[RestaurantController::class,'showMenuCategory']);
     Route::get('restaurants/showAviableTable/{id}',[RestaurantController::class,'showAviableTable']);
     Route::post('restaurants/bookTable/{id}',[RestaurantController::class,'bookTable']);
-    Route::post('restaurants/addOrder/{id}',[RestaurantController::class,'addOrder']);
 });
 

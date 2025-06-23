@@ -23,6 +23,7 @@ class TravelBookingRequest extends FormRequest
     {
         return [
             'number_of_people' => 'required|integer|min:1',
+            'ticket_type' => 'required|in:one_way,round_trip',
         ];
     }
 }

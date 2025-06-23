@@ -18,34 +18,6 @@ class AuthController extends Controller
     {
         $this->authRepository = $authRepository;
     }
-    public function payForBooking($id,PayRequest $request)
-    {
-        return $this->authRepository->payForBooking($id,$request);
-    }
-    public function UserRank()
-    {
-        return $this->authRepository->UserRank();
-    }
-    public function discountPoints()
-    {
-        return $this->authRepository->discountPoints();
-    }
-    public function addRating(RatingRequest $request)
-    {
-        return $this->authRepository->addRating($request);
-    }
-    public function submitFeedback(FeedBackRequest $request)
-    {
-        return $this->authRepository->submitFeedback($request);
-    }
-    public function getAvailablePromotions()
-    {
-        return $this->authRepository->getAvailablePromotions();
-    }
-    public function requestTourAdmin(Request $request)
-    {
-        return $this->authRepository->requestTourAdmin($request);
-    }
     public function login(LoginRequest $request)
     {
         return $this->authRepository->login($request);

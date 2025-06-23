@@ -4,26 +4,19 @@ namespace App\Repositories;
 
 use App\Http\Requests\RestaurantBookingRequest;
 use App\Http\Requests\RestaurantOrderRequest;
-use App\Interface\AuthInterface;
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
-use App\Http\Requests\OTPRequest;
 use App\Interface\RestaurantInterface;
 use App\Models\Booking;
 use App\Models\Favourite;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use App\Models\Policy;
 use App\Models\Promotion;
 use App\Models\Restaurant;
 use App\Models\RestaurantBooking;
 use App\Models\RestaurantTable;
-use App\Models\User;
 use App\Traits\HandlesUserPoints;
 use Illuminate\Http\Request;
-use Twilio\Rest\Client;
 use App\Traits\ApiResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class RestaurantRepository implements RestaurantInterface
 {
@@ -70,7 +63,13 @@ class RestaurantRepository implements RestaurantInterface
                 }
                 $result[] = $restaurantData;
             }
-
+            $policies = Policy::where('service_type', 3)->get()->map(function ($policy) {
+                return [
+                    'policy_type' => $policy->policy_type,
+                    'cutoff_time' => $policy->cutoff_time,
+                    'penalty_percentage' => $policy->penalty_percentage,
+                ];
+            });
             return $this->success('Store retrieved successfully', [
                 'restaurant ' => $restaurant,
                 'category'=>$result,
@@ -82,9 +81,9 @@ class RestaurantRepository implements RestaurantInterface
                     'discount_value' => $promotion->discount_value,
                     'minimum_purchase' => $promotion->minimum_purchase,
                 ] : null,
+                'policies' => $policies,
             ]);
-        }
-
+    }
     public function showAllRestaurant(){
         $restaurants = Restaurant::with('menuCategories')->get();
         $result = $restaurants->map(function($restaurant) {
@@ -118,6 +117,23 @@ class RestaurantRepository implements RestaurantInterface
         });
         return $this->success('All restaurants retrieved successfully', [
             'restaurants' => $result,
+        ]);
+    }
+    public function showRestaurantByLocation(Request $request)
+    {
+        $latitude = $request->input('latitude');
+        $longitude = $request->input('longitude');
+        $radius = $request->input('radius', 5);
+
+        $nearbyRestaurants = Restaurant::selectRaw(
+            "id, restaurant_name, ST_Distance_Sphere(location, POINT(?, ?)) as distance",
+            [$longitude, $latitude]
+        )
+        ->having('distance', '<=', $radius * 1000) 
+        ->get();
+
+        return $this->success('Nearby restaurants retrieved successfully', [
+            'restaurants' => $nearbyRestaurants,
         ]);
     }
     public function showNearByRestaurant(Request $request)
@@ -262,71 +278,6 @@ class RestaurantRepository implements RestaurantInterface
         'booking_reference' => $booking->booking_reference,
         'discount_amount' => $discountAmount,
     ]);
-    }
-
-    public function addOrder($id, RestaurantOrderRequest $request){
-        $booking = RestaurantBooking::with('booking')->find($id);
-
-        if (!$booking) {
-            return $this->error('Booking not found', 404);
-        }
-
-        $orderItems = $request->orderItems;
-        $finalOrder = [];
-        $totalFoodCost = 0;
-        
-        foreach ($orderItems as $orderItem) {
-            $menuItem = MenuItem::find($orderItem['item_id']);
-            
-            if (!$menuItem) {
-                return $this->error("Menu item not found", 404);
-            }
-        
-            $quantity = $orderItem['quantity'];
-            $size = $orderItem['size'] ?? 'medium';
-            $availableSizes = json_decode($menuItem->sizes, true);
-            if (!in_array($size, $availableSizes)) {
-                return $this->error("Size '$size' is not available for this menu item", 422);
-            }
-            $price = $menuItem->price;
-        
-            switch ($size) {
-                case 'small':
-                    $price *= 0.85; 
-                    break;
-                case 'large':
-                    $price *= 1.20;
-                    break;
-            }
-        
-            $subtotal = $price * $quantity;
-        
-            $finalOrder[] = [
-                'item_id' => $menuItem->id,
-                'name' => $menuItem->name,
-                'quantity' => $quantity,
-                'size' => $size,
-                'price' => round($price, 2),
-                'subtotal' => round($subtotal, 2),
-            ];
-        
-            $totalFoodCost += $subtotal;
-        }
-        $booking->order = json_encode($finalOrder);
-        $booking->cost += $totalFoodCost;
-        $booking->save();
-
-        if ($booking->booking) {
-            $booking->booking->total_price = $booking->cost;
-            $booking->booking->save();
-        }
-        $this->addPointsFromAction(auth('sanctum')->user(), 'add_restaurant_order', count($orderItems));
-
-        return $this->success('Order added successfully', [
-            'reservation_id' => $booking->id,
-            'order' => $finalOrder,
-            'total_cost' => $booking->cost,
-        ]);
     }
     public function showAviableTable($id){
         $restaurant = Restaurant::find($id);
