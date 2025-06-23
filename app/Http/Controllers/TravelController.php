@@ -45,8 +45,5 @@ class TravelController extends Controller
     {
         return $this->travelRepository->bookFlightByPoint($id,$request);
     }
-    public function updateFlightBooking($id,Request $request)
-    {
-        return $this->travelRepository->updateFlightBooking($id,$request);
-    }
+   
 }
