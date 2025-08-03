@@ -15,14 +15,14 @@ class TaxiBooking extends Model
      *
      * @var string
      */
-    protected $table = 'TaxiBookings';
+    protected $table = 'taxi_bookings';
 
     /**
      * The primary key associated with the table.
      *
      * @var string
      */
-    protected $primaryKey = 'TaxiBookingID';
+    protected $primaryKey = 'id';
 
     /**
      * Indicates if the model should be timestamped.
@@ -37,25 +37,32 @@ class TaxiBooking extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'BookingID',
-        'TaxiServiceID',
-        'VehicleTypeID',
-        'PickupLocationID',
-        'DropoffLocationID',
-        'PickupDateTime',
-        'EstimatedDistance',
-        'DriverID',
-        'VehicleID'
+        'booking_id',
+        'taxi_service_id',
+        'vehicle_type_id',
+        'trip_id',
+        'vehicle_id',
+        'driver_id',
+        'pickup_location_id',
+        'dropoff_location_id',
+        'pickup_date_time',
+        'type_of_booking',
+        'estimated_distance',
+        'duration_hours',
+        'return_time',
+        'status',
+        'is_scheduled',
+        'is_shared',
+        'passenger_count',
+        'max_additional_passengers'
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'PickupDateTime' => 'datetime',
-        'EstimatedDistance' => 'decimal:2',
+        'pickup_date_time' => 'datetime',
+        'return_time' => 'datetime',
+        'estimated_distance' => 'decimal:2',
+        'is_scheduled' => 'boolean',
+        'is_shared' => 'boolean'
     ];
 
     /**
@@ -63,7 +70,7 @@ class TaxiBooking extends Model
      */
     public function booking(): BelongsTo
     {
-        return $this->belongsTo(Booking::class, 'BookingID', 'BookingID');
+        return $this->belongsTo(Booking::class, 'booking_id', 'id');
     }
 
     /**
@@ -71,7 +78,7 @@ class TaxiBooking extends Model
      */
     public function pickupLocation(): BelongsTo
     {
-        return $this->belongsTo(Location::class, 'PickupLocationID', 'LocationID');
+        return $this->belongsTo(Location::class, 'pickup_location_id', 'id');
     }
 
     /**
@@ -79,6 +86,38 @@ class TaxiBooking extends Model
      */
     public function dropoffLocation(): BelongsTo
     {
-        return $this->belongsTo(Location::class, 'DropoffLocationID', 'LocationID');
+        return $this->belongsTo(Location::class, 'dropoff_location_id', 'id');
+    }
+
+    /**
+     * Get the taxi service that owns the taxi booking.
+     */
+    public function taxiService(): BelongsTo
+    {
+        return $this->belongsTo(TaxiService::class, 'taxi_service_id', 'id');
+    }
+
+    /**
+     * Get the vehicle type that owns the taxi booking.
+     */
+    public function vehicleType(): BelongsTo
+    {
+        return $this->belongsTo(VehicleType::class, 'vehicle_type_id', 'id');
+    }
+
+    /**
+     * Get the driver that owns the taxi booking.
+     */
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(Driver::class, 'driver_id', 'id');
+    }
+
+    /**
+     * Get the vehicle that owns the taxi booking.
+     */
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class, 'vehicle_id', 'id');
     }
 }

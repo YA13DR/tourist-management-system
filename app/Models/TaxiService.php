@@ -1,92 +1,78 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TaxiService extends Model
 {
-    use HasFactory;
+    use SoftDeletes;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'TaxiServices';
-
-    /**
-     * The primary key for the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'TaxiServiceID';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    protected $table = 'taxi_services';
     protected $fillable = [
-        'ServiceName',
-        'Description',
-        'LocationID',
-        'AverageRating',
-        'TotalRatings',
-        'LogoURL',
-        'Website',
-        'Phone',
-        'Email',
-        'IsActive',
-        'ManagerID',
+        'name',
+        'description',
+        'location_id',
+        'logo_url',
+        'website',
+        'phone',
+        'email',
+        'is_active',
+        'manager_id'
     ];
 
-    /**
-     * Get the location that the taxi service belongs to.
-     */
+    protected $casts = [
+        'is_active' => 'boolean',
+        'average_rating' => 'float',
+        'total_ratings' => 'integer',
+        'deleted_at' => 'datetime'
+    ];
+
+    protected $hidden = [
+        'deleted_at',
+        'created_at',
+        'updated_at'
+    ];
+
+    // Relationships
     public function location()
     {
-        return $this->belongsTo(Location::class, 'LocationID', 'LocationID');
+        return $this->belongsTo(Location::class)->withDefault();
     }
 
-    /**
-     * Get the manager that owns the taxi service.
-     */
     public function manager()
     {
-        return $this->belongsTo(User::class, 'ManagerID', 'UserID');
+        return $this->belongsTo(User::class)->withDefault();
     }
 
-    /**
-     * Get the vehicle types for the taxi service.
-     */
     public function vehicleTypes()
     {
-        return $this->hasMany(VehicleType::class, 'TaxiServiceID', 'TaxiServiceID');
+        return $this->hasMany(VehicleType::class);
     }
 
-    /**
-     * Get the vehicles for the taxi service.
-     */
     public function vehicles()
     {
-        return $this->hasMany(Vehicle::class, 'TaxiServiceID', 'TaxiServiceID');
+        return $this->hasMany(Vehicle::class);
     }
 
-    /**
-     * Get the drivers for the taxi service.
-     */
     public function drivers()
     {
-        return $this->hasMany(Driver::class, 'TaxiServiceID', 'TaxiServiceID');
+        return $this->hasMany(Driver::class);
     }
 
-    /**
-     * Get the taxi bookings for the taxi service.
-     */
-    public function taxiBookings()
+    public function bookings()
     {
-        return $this->hasMany(TaxiBooking::class, 'TaxiServiceID', 'TaxiServiceID');
+        return $this->hasMany(TaxiBooking::class);
+    }
+
+    // Scopes
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeWithLocation($query)
+    {
+        return $query->with(['location']);
     }
 }
