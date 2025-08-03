@@ -32,7 +32,6 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->constrained('user','id')->onDelete('cascade');
             $table->unsignedBigInteger('flight_id')->constrained('travel_flights','id')->onDelete('cascade');
             $table->enum('ticket_type', ['one_way', 'round_trip'])->default('one_way');
-            $table->unsignedBigInteger('return_flight_id')->nullable()->constrained('travel_flights')->onDelete('cascade');
             $table->integer('number_of_people')->default(1);
             $table->date('booking_date');
             $table->double('total_price');
